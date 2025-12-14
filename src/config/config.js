@@ -1,28 +1,29 @@
-import { ENV, USER, PASSWORD, NAME, HOST, PORT } from "../env.js";
+const DB_CONFIG = require("./env.js");
+
 // Sequelize-cli reads the ENV and selects from the list.
-export default {
+module.exports = {
   development: {
-    username: USER,
-    password: PASSWORD,
-    database: NAME,
-    host: HOST,
-    port: PORT,
+    username: DB_CONFIG.USER,
+    password: DB_CONFIG.PASSWORD,
+    database: DB_CONFIG.NAME,
+    host: DB_CONFIG.HOST,
+    port: DB_CONFIG.PORT,
     dialect: "mssql",
   },
   test: {
-    username: USER,
-    password: PASSWORD,
-    database: `${NAME}_test`,
-    host: HOST,
-    port: PORT,
+    username: DB_CONFIG.USER,
+    password: DB_CONFIG.PASSWORD,
+    database: `${DB_CONFIG.NAME}_test`,
+    host: DB_CONFIG.HOST,
+    port: DB_CONFIG.PORT,
     dialect: "mssql",
   },
   production: {
-    username: USER,
-    password: PASSWORD,
-    database: NAME,
-    host: HOST,
-    port: PORT,
+    username: DB_CONFIG.USER,
+    password: DB_CONFIG.PASSWORD,
+    database: DB_CONFIG.NAME,
+    host: DB_CONFIG.HOST,
+    port: DB_CONFIG.PORT,
     dialect: "mssql",
   },
 };
