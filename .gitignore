@@ -1,0 +1,29 @@
+.env.development
+.env.test
+.env.production
+
+node_modules/
+logs/
+*.log
+
+dist/
+build/
+
+database/config/config.js
+
+tmp/
+temp/
+uploads/
+
+/* MAC OS */
+.DS_Store
+
+/* WIN OS */
+Thumbs.db
+desktop.ini
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+.idea/
