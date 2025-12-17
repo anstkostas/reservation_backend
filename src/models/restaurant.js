@@ -36,7 +36,7 @@ module.exports = (sequelize, dataTypes) => {
       },
     },
     {
-      tableName: "Restaurants",
+      tableName: "Restaurants", // Optional, since sequelize defines it in plural.
       timestamps: false,
     }
   );

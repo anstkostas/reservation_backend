@@ -23,8 +23,9 @@ module.exports = (sequelize, dataTypes) => {
         allowNull: false,
       },
       status: {
-        type: dataTypes.STRING,
+        type: dataTypes.ENUM("active", "canceled", "completed"),
         allowNull: false,
+        defaultValue: "active"
       },
       restaurantId: {
         type: dataTypes.UUIDV4,
