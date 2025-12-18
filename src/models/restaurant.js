@@ -30,7 +30,7 @@ module.exports = (sequelize, dataTypes) => {
         type: dataTypes.STRING,
         allowNull: false,
       },
-      userId: {
+      ownerId: {
         type: dataTypes.UUID,
         allowNull: true,
       },
