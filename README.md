@@ -52,3 +52,60 @@ With `npx sequelize-cli db:migrate:undo:all` sequelize reverts all migration fil
 Run `npx sequelize-cli db:seed:all` to executal all seed files located in `/seeders` directory.
 With `npx sequelize-cli db:seed:undo:all` sequelize reverts all seed files. To execute a specific file run `npx sequelize-cli db:seed --seed <seed-filename.js>`.
 For more information visit the [official site](https://sequelize.org/docs/v6/other-topics/migrations/).
+
+## Repositories
+
+1. Encapsulate all **database access** using Sequelize models. Serve as Data Access Objects(DAOs).
+2. Implement **CRUD operations** for `User`, `Restaurant`, and `Reservation`.
+3. Designed as **objects** with explicit methods: `create`, `update`, `findBy<field>`, `findAll`, `delete`, `count<byFK>`.
+
+**Example: userRepository**
+
+```js
+module.exports = {
+  async create(userData) {
+    return User.create(userData);
+  },
+  async findById(id) {
+    return User.findByPk(id);
+  },
+};
+```
+
+## Data Transfer Objects(DTOs)
+
+Their purpose is to sanitize, normalize, and shape data going in and out of the system.
+
+#### Input DTOs:
+
+Clean incoming data (trim(), lowercase emails, defaults like status = "active"). Separate Create and Update DTOs for required vs optional fields.
+
+#### Output DTOs:
+
+Return only safe and necessary fields (exclude sensitive data like passwords).
+
+#### Example: UserOutputDTO
+
+```js
+const UserOutputDTO = ({ id, email, firstName, lastName, role }) => ({
+  id,
+  email,
+  firstName,
+  lastName,
+  role,
+});
+```
+
+## Validation Schemas (Joi)
+
+Used Joi to validate request data before passing to services.
+
+Separate Create and Update schemas:
+
+Create: strict, required fields
+
+Update: optional fields, validate type if present
+
+Enforce field formats, lengths etc.
+
+Password strength (8+ chars, uppercase, lowercase, number, special char)
