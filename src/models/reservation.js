@@ -1,5 +1,3 @@
-const { DateTime } = require("mssql");
-
 module.exports = (sequelize, dataTypes) => {
   const Reservation = sequelize.define(
     "Reservation",
