@@ -1,0 +1,31 @@
+const Joi = require("joi");
+
+const passwordPattern =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+
+const createUserSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().pattern(passwordPattern).required().messages({
+    "string.pattern.base":
+      "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
+  }),
+  firstName: Joi.string().min(4).max(50).required(),
+  lastName: Joi.string().min(4).max(50).required(),
+  role: Joi.string().valid("owner", "customer").required(),
+});
+
+const updateUserSchema = Joi.object({
+  email: Joi.string().email(),
+  password: Joi.string().pattern(passwordPattern).messages({
+    "string.pattern.base":
+      "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
+  }),
+  firstName: Joi.string().min(4).max(50),
+  lastName: Joi.string().min(4).max(50),
+  role: Joi.string().valid("owner", "customer").required(),
+});
+
+module.exports = {
+  createUserSchema,
+  updateUserSchema,
+};
