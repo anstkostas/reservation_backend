@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const userRepository = require("../repositories/userRepository.js");
-const restaurantRepository = require("../repositories/RestaurantRepository.js");
+const restaurantRepository = require("../repositories/restaurantRepository.js");
 const userDTO = require("../dtos/userDTO.js");
 
 // Object Literal Pattern
