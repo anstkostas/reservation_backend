@@ -1,6 +1,9 @@
 function isInPast(date) {
-  const today = new Date();
-  return date.getTime() < today.getTime();
+  const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d)) {
+    throw new Error("Invalid date");
+  }
+  return d < new Date();
 }
 
 function getRandomDate() {
@@ -25,4 +28,12 @@ function getRandomTime() {
   return randomTime.toString().concat(":").padEnd(5, 0);
 }
 
-module.exports = { getRandomDate, getRandomTime };
+function isWithinTwoMonths(date) {
+  const MAX_MONTHS_AHEAD = 2;
+  const now = new Date();
+  const max = new Date();
+  max.setMonth(max.getMonth() + MAX_MONTHS_AHEAD);
+  return date >= now && date <= max;
+}
+
+module.exports = { isInPast, getRandomDate, getRandomTime, isWithinTwoMonths };
