@@ -11,7 +11,7 @@ const createReservationSchema = Joi.object({
     .messages({
       "string.pattern.base": "Time must be in HH:mm format",
     }),
-  persons: Joi.number().integer().positive().required(),
+  persons: Joi.number().integer().positive().min(1).required(),
   status: Joi.string()
     .valid(...allowedStatus)
     .default("active"),

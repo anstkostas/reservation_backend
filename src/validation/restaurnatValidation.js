@@ -11,7 +11,7 @@ const createRestaurantSchema = Joi.object({
 
 const updateRestaurantSchema = Joi.object({
   name: Joi.string().min(4).max(100),
-  capacity: Joi.number().integer().positive(),
+  capacity: Joi.number().integer().positive().min(1),
   description: Joi.string().allow("").max(500),
   logoUrl: Joi.string().uri(),
   coverImageUrl: Joi.string().uri(),
