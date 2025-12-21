@@ -1,35 +1,33 @@
-const createReservationInputDTO = ({ date, time, persons, status, restaurantId, customerId }) => ({
-  date,
-  time,
-  persons,
-  status: status || "active",
-  restaurantId,
-  customerId
-});
-
-const updateReservationInputDTO = (data) => {
-  const dto = {};
-  if (data.date !== undefined) dto.date = data.date;
-  if (data.time !== undefined) dto.time = data.time;
-  if (data.persons !== undefined) dto.persons = data.persons;
-  if (data.status !== undefined) dto.status = data.status;
-  if (data.restaurantId !== undefined) dto.restaurantId = data.restaurantId;
-  if (data.customerId !== undefined) dto.customerId = data.customerId;
-  return dto;
-};
-
-const reservationOutputDTO = ({ id, date, time, persons, status, restaurantId, customerId }) => ({
-  id,
-  date,
-  time,
-  persons,
-  status,
-  restaurantId,
-  customerId
-});
-
 module.exports = {
-  createReservationInputDTO,
-  updateReservationInputDTO,
-  reservationOutputDTO
+  createReservationInputDTO(data) {
+    return {
+      date: data.date,
+      time: data.time,
+      persons: data.persons || 1,
+      restaurantId: data.restaurantId
+      // status isnt provided by user
+      // customerIf from req.user.id(login user-auth)
+    };
+  },
+
+  updateReservationInputDTO(data) {
+    const dto = {};
+    if (data.date !== undefined) dto.date = data.date;
+    if (data.time !== undefined) dto.time = data.time;
+    if (data.persons !== undefined) dto.persons = data.persons;
+    // if (data.status !== undefined) dto.status = data.status; // For cancel/complete.
+    return dto;
+  },
+
+  reservationOutputDTO(dbData) {
+    return {
+      id: dbData.id,
+      date: dbData.date,
+      time: dbData.time,
+      persons: dbData.persons,
+      status: dbData.status,
+      restaurantId: dbData.restaurantId,
+      customerId: dbData.customerId,
+    };
+  },
 };
