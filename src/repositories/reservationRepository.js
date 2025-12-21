@@ -1,6 +1,6 @@
-import { Reservation } from "../models/reservation.js";
+const { Reservation } = require("../models/reservation.js");
 
-export const ReservationRepository = {
+module.exports = {
   async create(reservationData) {
     return Reservation.create(reservationData);
   },
