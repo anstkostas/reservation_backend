@@ -19,18 +19,19 @@ module.exports = (sequelize, dataTypes) => {
       persons: {
         type: dataTypes.INTEGER,
         allowNull: false,
+        defaultValue: 1,
       },
       status: {
         type: dataTypes.ENUM("active", "canceled", "completed"),
         allowNull: false,
-        defaultValue: "active"
+        defaultValue: "active",
       },
       restaurantId: {
-        type: dataTypes.UUIDV4,
+        type: dataTypes.UUIDV,
         allowNull: false,
       },
       customerId: {
-        type: dataTypes.UUIDV4,
+        type: dataTypes.UUIDV,
         allowNull: false,
       },
     },

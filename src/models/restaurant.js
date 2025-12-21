@@ -21,14 +21,17 @@ module.exports = (sequelize, dataTypes) => {
       capacity: {
         type: dataTypes.INTEGER,
         allowNull: false,
+        defaultValue: 0
       },
       logoUrl: {
         type: dataTypes.STRING,
         allowNull: false,
+        defaultValue: ""
       },
       coverImageUrl: {
         type: dataTypes.STRING,
         allowNull: false,
+        defaultValue: ""
       },
       ownerId: {
         type: dataTypes.UUID,
