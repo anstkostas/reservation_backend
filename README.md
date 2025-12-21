@@ -109,3 +109,31 @@ Update: optional fields, validate type if present
 Enforce field formats, lengths etc.
 
 Password strength (8+ chars, uppercase, lowercase, number, special char)
+
+
+## Service Layer
+Adds business logic.
+For user model
+
+#### 🏪 Restaurant Service
+- Enforce ownership (restaurant belongs to an owner)
+- - `ownerId` is injected by service (from auth context)
+- Restaurant ownership cannot be reassigned via update
+- Only owner can modify or delete their restaurant
+- `ownerId` immutable after creation
+  
+#### 📅 ReservationService
+- Implement soft delete
+- Reservation data must be from today up to two months from now.
+- persons must not be zero
+- Guard from overbooking
+- Status default to `active`
+- Only reservation owner can update
+- Only `active` reservations can be modified
+- No updates to past reservations
+- Immutable fields are protected:
+  - `customerId`
+  - `restaurantId`
+##### Reservation Lifecycle
+- `active` → `canceled`
+- `active` → `completed`
