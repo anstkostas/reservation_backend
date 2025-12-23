@@ -1,8 +1,8 @@
-const env = process.env.NODE_ENV || "development";
-require("dotenv").config({ path: `.env.${env}` });
+const ENV = process.env.NODE_ENV || "development";
+require("dotenv").config({ path: `.env.${ENV}` });
 
 const DB_CONFIG = {
-  ENV: env,
+  ENV: ENV,
   HOST: process.env.DB_HOST || "localhost",
   PORT: Number(process.env.DB_PORT) || 1433,
   INSTANCE: process.env.DB_INSTANCE || undefined,
@@ -11,4 +11,4 @@ const DB_CONFIG = {
   PASSWORD: process.env.DB_PASSWORD,
 };
 
-module.exports = DB_CONFIG;
+module.exports = { env: ENV, DB_CONFIG };

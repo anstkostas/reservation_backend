@@ -1,4 +1,4 @@
-const DB_CONFIG = require("./env.js");
+const { DB_CONFIG } = require("./env.js");
 
 // Sequelize-cli reads the ENV and selects from the list.
 module.exports = {
