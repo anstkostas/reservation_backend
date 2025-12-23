@@ -1,29 +1,52 @@
 const bcrypt = require("bcrypt");
-const userRepository = require("../repositories/userRepository.js");
-const restaurantRepository = require("../repositories/restaurantRepository.js");
-const userDTO = require("../dtos/userDTO.js");
+const { userRepository, restaurantRepository } = require("../repositories");
+const { userDTO } = require("../dtos");
+const { NotFoundError, ValidationError, ForbiddenError } = require("../errors");
 
 // Object Literal Pattern
 module.exports = {
+  async getUserById(id) {
+    const user = await userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return user;
+  },
+
+  async getUserByEmail(email) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return user;
+  },
+
   async createUser(data) {
     const createDTO = userDTO.createUserInputDTO(data);
     const exists = await userRepository.findByEmail(createDTO.email);
     if (exists) {
-      throw Error("Email already in use"); // Later add http response type
+      throw new ValidationError("Email already in use", [
+        { field: "email", message: "Email already in use" },
+      ]);
     }
     createDTO.password = await bcrypt.hash(createDTO.password, 10);
     // Owner assignment logic
     if (createDTO.role === "owner") {
       if (!createDTO.restaurantId) {
-        throw new Error("Owner must select a restaurant");
+        throw new ValidationError("Owner must select a restaurant", [
+          {
+            field: "restaurantId",
+            message: "Restaurant is required for owner role",
+          },
+        ]);
       }
 
       const restaurant = await restaurantRepository.findById(
         createDTO.restaurantId
       );
-      if (!restaurant) throw new Error("Restaurant not found");
+      if (!restaurant) throw new NotFoundError("Restaurant not found");
       if (restaurant.ownerId)
-        throw new Error("Restaurant already has an owner");
+        throw new ValidationError("Restaurant already has an owner");
 
       await restaurantRepository.update(createDTO.restaurantId, {
         ownerId: createDTO.id,
@@ -37,16 +60,18 @@ module.exports = {
     const updateDTO = userDTO.updateUserInputDTO(data);
     // Check DTO if empty bc data could only have invalid fields.
     if (Object.keys(updateDTO).length === 0) {
-      throw new Error("No fields to update");
+      throw new ValidationError("No fields to update");
     }
     if (updateDTO.email) {
       const exists = await userRepository.findByEmail(updateDTO.email);
       if (exists && exists.id !== id) {
-        throw new Error("Email already in use");
+        throw new ValidationError("Email already in use", [
+          { field: "email", message: "Email already in use" },
+        ]);
       }
     }
     if ("customerId" in updateDTO || "restaurantId" in updateDTO) {
-      throw new Error("Cannot modify reservation ownership");
+      throw new ForbiddenError("Cannot modify reservation ownership");
     }
 
     if (updateDTO.password) {
@@ -54,7 +79,7 @@ module.exports = {
     }
     const updated = await userRepository.update(id, updateDTO);
     if (!updated) {
-      throw new Error("User not found");
+      throw new NotFoundError("User not found");
     }
     return userDTO.userOutputDTO(updated);
   },
