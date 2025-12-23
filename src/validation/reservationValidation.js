@@ -1,38 +1,26 @@
-// src/validation/reservationValidation.js
 const Joi = require("joi");
-
-const allowedStatus = ["active", "canceled", "completed"];
 
 const createReservationSchema = Joi.object({
   date: Joi.date().required(),
   time: Joi.string()
-    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .required() // HH:mm 24h format
-    .messages({
-      "string.pattern.base": "Time must be in HH:mm format",
-    }),
-  persons: Joi.number().integer().positive().min(1).required(),
-  status: Joi.string()
-    .valid(...allowedStatus)
-    .default("active"),
-  restaurantId: Joi.string().uuid().required(),
-  customerId: Joi.string().uuid().required(),
+    .pattern(/^([01]\d|2[0-3]):([0-5]\d)$/)
+    .required(),
+  persons: Joi.number().integer().min(1).required(),
 });
 
 const updateReservationSchema = Joi.object({
   date: Joi.date(),
   time: Joi.string()
-    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .messages({
-      "string.pattern.base": "Time must be in HH:mm format",
-    }),
-  people: Joi.number().integer().positive(),
-  status: Joi.string().valid(...allowedStatus),
-  restaurantId: Joi.string().uuid(),
-  customerId: Joi.string().uuid(),
+    .pattern(/^([01]\d|2[0-3]):([0-5]\d)$/),
+  persons: Joi.number().integer().min(1),
+}).min(1);
+
+const reservationStatusSchema = Joi.object({
+  status: Joi.string().valid("canceled", "completed").required(),
 });
 
 module.exports = {
   createReservationSchema,
   updateReservationSchema,
+  reservationStatusSchema
 };

@@ -23,7 +23,7 @@ const updateUserSchema = Joi.object({
   firstName: Joi.string().min(4).max(50),
   lastName: Joi.string().min(4).max(50),
   role: Joi.string().valid("owner", "customer").required(),
-});
+}).min(1);
 
 module.exports = {
   createUserSchema,
