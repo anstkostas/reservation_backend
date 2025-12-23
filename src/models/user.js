@@ -43,7 +43,7 @@ module.exports = (sequelize, dataTypes) => {
   );
 
   User.associate = (models) => {
-    User.hasMany(models.Restaurant, {
+    User.hasOne(models.Restaurant, {
       foreignKey: "ownerId",
       as: "restaurants",
     });
