@@ -39,18 +39,16 @@ module.exports = (sequelize, dataTypes) => {
       },
     },
     {
-      tableName: "Restaurants", // Optional, since sequelize defines it in plural.
+      tableName: "Restaurants",
       timestamps: false,
     }
   );
 
   Restaurant.associate = (models) => {
-    // Reservation.findAll({ include: ["restaurant", "customer"] });
     Restaurant.belongsTo(models.User, {
       foreignKey: "ownerId",
       as: "owner",
     });
-    // for restaurant.getReservations();
     Restaurant.hasMany(models.Reservation, {
       foreignKey: "restaurantId",
       as: "reservations",
