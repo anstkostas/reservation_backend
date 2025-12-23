@@ -1,11 +1,63 @@
+const { ValidationError } = require("../errors");
+
 module.exports = {
-  isInPast(date) {
-    const d = date instanceof Date ? date : new Date(date);
-    if (isNaN(d)) {
-      throw new Error("Invalid date");
+  /**
+   * Validates that a reservation date + time represent a valid future datetime
+   * within the allowed booking window.
+   *
+   * Business rules enforced:
+   * - Combined date and time must not be in the past
+   * - Combined datetime must be within the next 2 months
+   *
+   * This function is a guard:
+   * - It does not return a value
+   * - It throws a ValidationError if the rules are violated
+   *
+   * @param {Date|string} date - Reservation date (Date object or ISO-compatible string)
+   * @param {string} time - Reservation time in HH:mm 24-hour format
+   *
+   * @throws {ValidationError}
+   * Thrown when:
+   * - The combined datetime is in the past
+   * - The combined datetime exceeds the allowed booking window
+   *
+   * @example
+   * validateReservationDateTime("2025-09-10", "18:30");
+   *
+   * @example
+   * validateReservationDateTime(reservation.date, reservation.time);
+   */
+  validateReservationDateTime(date, time) {
+    const [h, m] = time.split(":").map(Number);
+    const dt = new Date(date);
+    dt.setHours(h, m, 0, 0);
+    const now = new Date();
+    if (dt < now) {
+      throw new ValidationError("Reservation datetime cannot be in the past");
     }
-    return d < new Date();
+    const twoMonthsFromNow = new Date();
+    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+    if (dt > twoMonthsFromNow) {
+      throw new ValidationError(
+        "Reservation must be within 2 months from today"
+      );
+    }
   },
+
+  // isInPast(date) {
+  //   const d = date instanceof Date ? date : new Date(date);
+  //   if (isNaN(d)) {
+  //     throw new Error("Invalid date");
+  //   }
+  //   return d < new Date();
+  // },
+  // isWithinTwoMonths(date) {
+  //   const MAX_MONTHS_AHEAD = 2;
+  //   const now = new Date();
+  //   const max = new Date();
+  //   max.setMonth(max.getMonth() + MAX_MONTHS_AHEAD);
+  //   return date >= now && date <= max;
+  // },
 
   getRandomDate() {
     const today = new Date();
@@ -27,13 +79,5 @@ module.exports = {
     const randomOffset = Math.floor(Math.random() * (2 * range + 1)) - range;
     const randomTime = middle + randomOffset;
     return randomTime.toString().concat(":").padEnd(5, 0);
-  },
-
-  isWithinTwoMonths(date) {
-    const MAX_MONTHS_AHEAD = 2;
-    const now = new Date();
-    const max = new Date();
-    max.setMonth(max.getMonth() + MAX_MONTHS_AHEAD);
-    return date >= now && date <= max;
   },
 };
