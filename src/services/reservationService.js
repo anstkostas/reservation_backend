@@ -13,19 +13,7 @@ module.exports = {
 
     const createDTO = reservationDTO.createReservationInputDTO(data);
 
-    if (createDTO.date && dateTimeUtils.isInPast(createDTO.date)) {
-      throw new ValidationError("Reservation date cannot be in the past");
-    }
-
-    if (createDTO.date && !dateTimeUtils.isWithinTwoMonths(createDTO.date)) {
-      throw new ValidationError(
-        "Reservation must be within 2 months from today"
-      );
-    }
-
-    if (createDTO.persons < 1) {
-      throw new ValidationError("Persons must be at least 1");
-    }
+    dateTimeUtils.validateReservationDateTime(createDTO.date, createDTO.time);
 
     if (!restaurantId) throw new ValidationError("RestaurantId required");
     createDTO.restaurantId = restaurantId;
@@ -79,7 +67,9 @@ module.exports = {
     }
 
     if (existing.customerId !== customer.id) {
-      throw new ForbiddenError("Not allowed to modify another person's reservation");
+      throw new ForbiddenError(
+        "Not allowed to modify another person's reservation"
+      );
     }
 
     if (existing.status !== "active") {
@@ -87,16 +77,16 @@ module.exports = {
     }
 
     const updateDTO = reservationDTO.updateReservationInputDTO(data);
-    if (updateDTO.date && dateTimeUtils.isInPast(updateDTO.date)) {
-      throw new ValidationError("Past reservations cannot be modified");
+
+    if (updateDTO.date || updateDTO.time) {
+      dateTimeUtils.validateReservationDateTime(
+        updateDTO.date ?? existing.date,
+        updateDTO.time ?? existing.time
+      );
     }
 
     if ("customerId" in updateDTO || "restaurantId" in updateDTO) {
       throw new ValidationError("Cannot modify reservation ownership");
-    }
-
-    if (updateDTO.persons !== undefined && updateDTO.persons < 1) {
-      throw new ValidationError("Persons must be at least 1");
     }
 
     const updated = await reservationRepository.update(id, updateDTO);
@@ -132,7 +122,8 @@ module.exports = {
     }
 
     const restaurant = await restaurantRepository.findByOwnerId(user.id);
-    if (!restaurant) throw new ValidationError("Owner has no assigned restaurant");
+    if (!restaurant)
+      throw new ValidationError("Owner has no assigned restaurant");
 
     const reservation = await reservationRepository.findById(id);
     if (!reservation) throw new NotFoundError("Reservation not found");
@@ -161,7 +152,8 @@ module.exports = {
     }
 
     const restaurant = await restaurantRepository.findByOwnerId(user.id);
-    if (!restaurant) throw new ValidationError("Owner has no assigned restaurant");
+    if (!restaurant)
+      throw new ValidationError("Owner has no assigned restaurant");
 
     const reservations = await reservationRepository.findAll({
       restaurantId: restaurant.id,
