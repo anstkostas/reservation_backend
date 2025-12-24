@@ -29,32 +29,36 @@ module.exports = {
     }
 
     // --- overbooking check ---
+    // Should go to repository level, prevent race conditions(2 or more reservations are booked at the same time)
     const existingReservations = await reservationRepository.findAll({
       restaurantId,
     });
 
-    const sameSlot = existingReservations.filter(
+    const reservedTables = existingReservations.filter(
       (reservation) =>
         reservation.date === createDTO.date &&
         reservation.time === createDTO.time &&
         reservation.status === "active"
-    );
+    ).length;
 
-    const reservedTables = sameSlot.reduce(
-      (sum, reservation) => sum + reservation.persons,
-      0
-    );
-
-    if (reservedTables + createDTO.persons > restaurant.capacity) {
+    if (reservedTables >= restaurant.capacity) {
       throw new ValidationError(
         "Restaurant is fully booked for this time slot"
       );
     }
 
     createDTO.status = "active";
-    const reservation = await reservationRepository.create(createDTO);
 
-    return reservationDTO.reservationOutputDTO(reservation);
+    try {
+      const reservation = await reservationRepository.create(createDTO);
+
+      return reservationDTO.reservationOutputDTO(reservation);
+    } catch (err) {
+      if (err.name === "SequelizeValidationError") {
+        throw ValidationError.fromSequelize(err);
+      }
+      throw err;
+    }
   },
 
   async updateReservation(id, data, customer) {
@@ -89,8 +93,15 @@ module.exports = {
       throw new ValidationError("Cannot modify reservation ownership");
     }
 
-    const updated = await reservationRepository.update(id, updateDTO);
-    return reservationDTO.reservationOutputDTO(updated);
+    try {
+      const updated = await reservationRepository.update(id, updateDTO);
+      return reservationDTO.reservationOutputDTO(updated);
+    } catch (err) {
+      if (err.name === "SequelizeValidationError") {
+        throw ValidationError.fromSequelize(err);
+      }
+      throw err;
+    }
   },
 
   // soft-delete
