@@ -52,8 +52,16 @@ module.exports = {
         ownerId: createDTO.id,
       });
     }
-    const user = await userRepository.create(createDTO);
-    return userDTO.userOutputDTO(user);
+    try {
+      // Wrap only input directly related calls to the db with this error. For example completeReservation should be like this bc if Sequelize throws error it wouldnt be a Validation so with this method I would mask it as one.
+      const user = await userRepository.create(createDTO);
+      return userDTO.userOutputDTO(user);
+    } catch (err) {
+      if (err.name === "SequelizeValidationError") {
+        throw ValidationError.fromSequelize(err);
+      }
+      throw err;
+    }
   },
 
   async updateUser(id, data) {
@@ -77,11 +85,20 @@ module.exports = {
     if (updateDTO.password) {
       updateDTO.password = await bcrypt.hash(updateDTO.password, 10);
     }
-    const updated = await userRepository.update(id, updateDTO);
-    if (!updated) {
-      throw new NotFoundError("User not found");
+
+    try {
+      const updated = await userRepository.update(id, updateDTO);
+      if (!updated) {
+        throw new NotFoundError("User not found");
+      }
+
+      return userDTO.userOutputDTO(updated);
+    } catch (err) {
+      if (err.name === "SequelizeValidationError") {
+        throw ValidationError.fromSequelize(err);
+      }
+      throw err;
     }
-    return userDTO.userOutputDTO(updated);
   },
 
   // Will be used to display no owned restaurants to be selected by users.
