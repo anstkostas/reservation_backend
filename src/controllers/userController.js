@@ -1,0 +1,51 @@
+const { userService } = require("../services");
+const { sendResponse } = require("../utils");
+
+module.exports = {
+  async createUser(req, res, next) {
+    try {
+      const user = await userService.createUser(req.body);
+      sendResponse(res, user, 201);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updateUser(req, res, next) {
+    try {
+      const userId = Number(req.params.id);
+      const updatedUser = await userService.updateUser(userId, req.body);
+      sendResponse(res, updatedUser);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getUserById(req, res, next) {
+    try {
+      const userId = Number(req.params.id);
+      const user = await userService.getUserById(userId);
+      sendResponse(res, user);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getUserByEmail(req, res, next) {
+    try {
+      const user = await userService.getUserByEmail(req.params.email);
+      return sendResponse(res, user);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async listUnownedRestaurants(req, res, next) {
+    try {
+      const restaurants = await userService.listUnownedRestaurants();
+      return sendResponse(res, restaurants, 200, "Unowned restaurants fetched");
+    } catch (err) {
+      next(err);
+    }
+  },
+};

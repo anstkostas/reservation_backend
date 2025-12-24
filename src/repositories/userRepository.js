@@ -1,10 +1,14 @@
 // Implement Java's DAO pattern
 // Encapsulate access to db in a constant set of methods.
 const { User } = require("../models/user.js");
-
+const { ValidationError } = require("../errors");
 module.exports = {
   async create(userData) {
-    return User.create(userData);
+    try {
+      return await User.create(userData);
+    } catch (err) {
+      throw ValidationError.fromSequelize(err);
+    }
   },
 
   async findById(id) {
