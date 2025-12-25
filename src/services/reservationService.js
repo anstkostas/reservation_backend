@@ -1,3 +1,4 @@
+const { sequelize } = require("../models");
 const {
   restaurantRepository,
   reservationRepository,
@@ -7,15 +8,42 @@ const { dateTimeUtils } = require("../utils");
 const { NotFoundError, ValidationError, ForbiddenError } = require("../errors");
 
 module.exports = {
+  /**
+   * Creates a new reservation for a customer at a specific restaurant and time.
+   *
+   * IMPORTANT:
+   * - This method is TRANSACTIONAL.
+   * - The transaction ensures that the overbooking check and reservation creation
+   *   happen atomically, preventing race conditions.
+   *
+   * Business rules enforced:
+   * - Only customers can create reservations.
+   * - Reservation date and time are validated (not in the past, within allowed range).
+   * - Number of persons cannot exceed restaurant capacity.
+   * - Overbooking prevention: active reservations for the same slot cannot exceed capacity.
+   * - Status is set to "active" on creation.
+   *
+   * Error handling:
+   * - SequelizeValidationError is normalized and thrown as ValidationError.
+   * - Business rule violations throw ValidationError or NotFoundError.
+   *
+   * @param {number} restaurantId - ID of the restaurant
+   * @param {Object} data - Reservation input data
+   * @param {Object} customer - Authenticated user object
+   * @returns {Promise<Object>} Reservation output DTO
+   * @throws {ValidationError} If any business rule or validation fails
+   * @throws {NotFoundError} If restaurant does not exist
+   * @throws {ForbiddenError} If user role is not "customer"
+   */
   async createReservation(restaurantId, data, customer) {
     if (customer.role !== "customer")
       throw new ValidationError("Only customers can make reservations");
 
+    if (!restaurantId) throw new ValidationError("RestaurantId required");
+
     const createDTO = reservationDTO.createReservationInputDTO(data);
 
     dateTimeUtils.validateReservationDateTime(createDTO.date, createDTO.time);
-
-    if (!restaurantId) throw new ValidationError("RestaurantId required");
     createDTO.restaurantId = restaurantId;
     createDTO.customerId = customer.id;
 
@@ -29,31 +57,27 @@ module.exports = {
     }
 
     // --- overbooking check ---
-    // Should go to repository level, prevent race conditions(2 or more reservations are booked at the same time)
-    const existingReservations = await reservationRepository.findAll({
-      restaurantId,
-    });
-
-    const reservedTables = existingReservations.filter(
-      (reservation) =>
-        reservation.date === createDTO.date &&
-        reservation.time === createDTO.time &&
-        reservation.status === "active"
-    ).length;
-
-    if (reservedTables >= restaurant.capacity) {
-      throw new ValidationError(
-        "Restaurant is fully booked for this time slot"
-      );
-    }
-
-    createDTO.status = "active";
-
+    const transaction = await sequelize.transaction();
     try {
-      const reservation = await reservationRepository.create(createDTO);
+      const reservedTables = await reservationRepository.countActiveBySlot(
+        restaurantId,
+        createDTO.date,
+        createDTO.time,
+        { transaction }
+      );
 
+      if (reservedTables >= restaurant.capacity) {
+        throw new ValidationError(
+          "Restaurant is fully booked for this time slot"
+        );
+      }
+
+      createDTO.status = "active";
+      const reservation = await reservationRepository.create(createDTO);
+      await transaction.commit();
       return reservationDTO.reservationOutputDTO(reservation);
     } catch (err) {
+      await transaction.rollback();
       if (err.name === "SequelizeValidationError") {
         throw ValidationError.fromSequelize(err);
       }
@@ -61,6 +85,33 @@ module.exports = {
     }
   },
 
+  /**
+   * Updates an existing reservation for a customer.
+   *
+   * IMPORTANT:
+   * - This method uses a TRANSACTION if date or time is being changed.
+   * - The transaction ensures the overbooking check and reservation update
+   *   happen atomically, preventing race conditions.
+   *
+   * Business rules enforced:
+   * - Only customers can update their own reservations.
+   * - Only active reservations can be modified.
+   * - Reservation date/time are validated if updated.
+   * - Overbooking prevention: active reservations for the new slot cannot exceed capacity.
+   * - Reservation ownership (customerId, restaurantId) cannot be changed.
+   *
+   * Error handling:
+   * - SequelizeValidationError is normalized and thrown as ValidationError.
+   * - Business rule violations throw ValidationError, NotFoundError, or ForbiddenError.
+   *
+   * @param {number} id - Reservation ID
+   * @param {Object} data - Partial update payload
+   * @param {Object} customer - Authenticated user object
+   * @returns {Promise<Object>} Updated reservation output DTO
+   * @throws {ValidationError} If input validation fails or business rules violated
+   * @throws {NotFoundError} If reservation or restaurant does not exist
+   * @throws {ForbiddenError} If user attempts to modify another customer's reservation
+   */
   async updateReservation(id, data, customer) {
     if (customer.role !== "customer")
       throw new ForbiddenError("Only customers can update reservations");
@@ -82,21 +133,51 @@ module.exports = {
 
     const updateDTO = reservationDTO.updateReservationInputDTO(data);
 
-    if (updateDTO.date || updateDTO.time) {
-      dateTimeUtils.validateReservationDateTime(
-        updateDTO.date ?? existing.date,
-        updateDTO.time ?? existing.time
-      );
-    }
+    const newDate = updateDTO.date ?? existing.date;
+    const newTime = updateDTO.time ?? existing.time;
+    dateTimeUtils.validateReservationDateTime(newDate, newTime);
 
     if ("customerId" in updateDTO || "restaurantId" in updateDTO) {
       throw new ValidationError("Cannot modify reservation ownership");
     }
 
+    const transaction = await sequelize.transaction();
     try {
-      const updated = await reservationRepository.update(id, updateDTO);
+      // Check overbooking only if date or time changed
+      if (updateDTO.date || updateDTO.time) {
+        const restaurant = await restaurantRepository.findById(
+          existing.restaurantId,
+          { transaction }
+        );
+        if (!restaurant) throw new NotFoundError("Restaurant not found");
+
+        const reservedTables = await reservationRepository.countActiveBySlot(
+          existing.restaurantId,
+          newDate,
+          newTime,
+          { transaction }
+        );
+
+        // If user is moving their own reservation to this slot, exclude their current one
+        const effectiveReserved =
+          existing.date === newDate && existing.time === newTime
+            ? reservedTables - 1
+            : reservedTables;
+
+        if (effectiveReserved >= restaurant.capacity) {
+          throw new ValidationError(
+            "Restaurant is fully booked for the new time slot"
+          );
+        }
+      }
+
+      const updated = await reservationRepository.update(id, updateDTO, {
+        transaction,
+      });
+      await transaction.commit();
       return reservationDTO.reservationOutputDTO(updated);
     } catch (err) {
+      await transaction.rollback();
       if (err.name === "SequelizeValidationError") {
         throw ValidationError.fromSequelize(err);
       }
