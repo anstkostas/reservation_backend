@@ -1,10 +1,10 @@
 // Implement Java's DAO pattern
 // Encapsulate access to db in a constant set of methods.
 const { User } = require("../models");
-const { ValidationError } = require("../errors");
+
 module.exports = {
-  async create(userData) {
-    return await User.create(userData);
+  async create(userData, options = {}) {
+    return await User.create(userData, options);
   },
 
   async findById(id) {

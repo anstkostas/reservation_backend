@@ -1,10 +1,10 @@
 const { Restaurant } = require("../models");
 
 module.exports = {
-  async findById(id) {
-    return Restaurant.findByPk(id);
+  async findById(id, options = {}) {
+    return Restaurant.findByPk(id, options);
   },
-  
+
   async findByOwnerId(ownerId) {
     return Restaurant.findOne({ where: { ownerId } });
   },
@@ -20,8 +20,8 @@ module.exports = {
     });
   },
 
-  async update(id, updatedData) {
-    const restaurant = await Restaurant.findByPk(id);
+  async update(id, updatedData, options = {}) {
+    const restaurant = await Restaurant.findByPk(id, options);
     if (!restaurant) return null;
     return restaurant.update(updatedData);
   },
