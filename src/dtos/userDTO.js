@@ -6,8 +6,7 @@ module.exports = {
       lastName: data.lastName?.trim(),
       email: data.email?.trim().toLowerCase(),
       password: data.password, // NOTE service layer will hash
-      role: rawData.role || "customer",
-      restaurantId: rawData.restaurantId || null,
+      restaurantId: data.restaurantId || null,
     };
   },
 
@@ -22,13 +21,13 @@ module.exports = {
     return dto;
   },
 
-  userOutputDTO(dbData) {
+  userOutputDTO(user) {
     return {
-      id: dbData.id,
-      firstName: dbData.firstName,
-      lastName: dbData.lastName,
-      email: dbData.email,
-      role: dbData.role,
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
     };
   },
 };

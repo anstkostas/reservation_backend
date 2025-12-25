@@ -1,4 +1,4 @@
-const { createUserInputDTO } = require("../dtos");
+const { userDTO } = require("../dtos");
 const { ValidationError } = require("../errors");
 
 module.exports = {
@@ -21,14 +21,9 @@ module.exports = {
    * @throws {ValidationError} if required fields are missing
    */
   signupInputDTO(data) {
-    const userData = createUserInputDTO(data);
+    const userData = userDTO.createUserInputDTO(data);
     if (!userData.email || !userData.password) {
       throw new ValidationError("Email and password are required");
-    }
-    if (userData.restaurantId) {
-      userData.role = "owner";
-    } else {
-      userData.role = "customer";
     }
     return userData;
   },
