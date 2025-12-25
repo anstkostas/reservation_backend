@@ -5,7 +5,7 @@ const defaultMessages = {
 };
 
 module.exports = {
-  function(res, data, status = 200, message = null) {
+  sendResponse(res, data, status = 200, message = null) {
     const payload = { success: true, data };
     payload.message = message || defaultMessages[status] || "Success";
     res.status(status).json(payload);

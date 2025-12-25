@@ -5,21 +5,21 @@
 const { ValidationError } = require("../errors");
 
 // later I would need to validate url params
-module.exports = (schema, property = "body") => {
-  return (req, res, next) => {
-    const { error, value } = schema.validate(req[property], {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-
-    if (error) {
-      throw new ValidationError(
-        "Validation failed",
-        error.details.map((d) => d.message)
-      );
-    }
-
-    req[property] = value;
-    next();
-  };
+module.exports = {
+  validate(schema, property = "body") {
+    return (req, res, next) => {
+      const { error, value } = schema.validate(req[property], {
+        abortEarly: false,
+        stripUnknown: true,
+      });
+      if (error) {
+        throw new ValidationError(
+          "Validation failed",
+          error.details.map((d) => d.message)
+        );
+      }
+      req[property] = value;
+      next();
+    };
+  },
 };
