@@ -1,8 +1,8 @@
-const { Reservation } = require("../models/reservation.js");
+const { Reservation } = require("../models");
 
 module.exports = {
-  async create(reservationData) {
-    return Reservation.create(reservationData);
+  async create(reservationData, options = {}) {
+    return Reservation.create(reservationData, options);
   },
 
   async findById(id) {
@@ -34,5 +34,17 @@ module.exports = {
     if (filter.restaurantId) where.restaurantId = filter.restaurantId;
     if (filter.customerId) where.customerId = filter.customerId;
     return Reservation.count({ where });
+  },
+
+  async countActiveBySlot(restaurantId, date, time, options = {}) {
+    return Reservation.count({
+      where: {
+        restaurantId,
+        date,
+        time,
+        status: "active",
+      },
+      ...options,
+    });
   },
 };
