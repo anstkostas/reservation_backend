@@ -3,7 +3,8 @@ const bcrypt = require("bcryptjs");
 const { userRepository } = require("../repositories");
 const { ValidationError } = require("../errors");
 const { AUTH_LOGIN } = require("../config/env");
-const { loginOutputDTO } = require("../dtos");
+const { authDTO } = require("../dtos");
+const { userService } = require("../services");
 
 module.exports = {
   async login(data) {
@@ -24,5 +25,20 @@ module.exports = {
     });
 
     return loginOutputDTO(user, token);
+  },
+
+  async signup(data) {
+    const user = await userService.createUser(data);
+
+    const payload = {
+      id: user.id,
+      role: user.role,
+    };
+
+    const token = jwt.sign(payload, AUTH_LOGIN.JWT_SECRET, {
+      expiresIn: AUTH_LOGIN.JWT_EXPIRES_IN,
+    });
+
+    return authDTO.loginOutputDTO(user, token);
   },
 };
