@@ -11,4 +11,9 @@ const DB_CONFIG = {
   PASSWORD: process.env.DB_PASSWORD,
 };
 
-module.exports = { env: ENV, DB_CONFIG };
+const AUTH_CONFIG = {
+  JWT_SECRET: process.env.JWT_SECRET,
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "2h",
+};
+
+module.exports = { env: ENV, DB_CONFIG, AUTH_CONFIG };
