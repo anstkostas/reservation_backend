@@ -2,14 +2,8 @@ const { userService } = require("../services");
 const { sendResponse } = require("../utils");
 
 module.exports = {
-  async createUser(req, res, next) {
-    try {
-      const user = await userService.createUser(req.body);
-      sendResponse(res, user, 201);
-    } catch (err) {
-      next(err);
-    }
-  },
+  // ❌ No create user here...
+  // endpoint is at authController, this controller handles authenticated user operations.
 
   async updateUser(req, res, next) {
     try {
