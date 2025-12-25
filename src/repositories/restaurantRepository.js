@@ -1,7 +1,6 @@
-const { Restaurant } = require("../models/restaurant.js");
+const { Restaurant } = require("../models");
 
 module.exports = {
-  // cant create new restaurants
   async findById(id) {
     return Restaurant.findByPk(id);
   },
@@ -17,7 +16,7 @@ module.exports = {
   async findAllByRestaurant(restaurantId, status = "active") {
     return Reservation.findAll({
       where: { restaurantId, status },
-      include: ["customer"], // join with customer if needed
+      include: ["customer"],
     });
   },
 
