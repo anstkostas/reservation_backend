@@ -62,6 +62,7 @@ module.exports = {
         { field: "email", message: "Email already in use" },
       ]);
     }
+    createDTO.role = createDTO.restaurantId ? "owner" : "customer";
     createDTO.password = await bcrypt.hash(createDTO.password, 10);
     const transaction = await sequelize.transaction();
     try {
@@ -78,7 +79,8 @@ module.exports = {
         }
 
         const restaurant = await restaurantRepository.findById(
-          createDTO.restaurantId
+          createDTO.restaurantId, 
+          { transaction }
         );
         if (!restaurant) throw new NotFoundError("Restaurant not found");
         if (restaurant.ownerId)
