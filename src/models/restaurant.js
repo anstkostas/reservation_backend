@@ -35,6 +35,7 @@ module.exports = (sequelize, dataTypes) => {
       },
       ownerId: {
         type: dataTypes.UUID,
+        unique: true,
         allowNull: true,
       },
     },
