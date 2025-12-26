@@ -36,29 +36,31 @@ module.exports = {
    * @throws {ForbiddenError} If user role is not "customer"
    */
   async createReservation(restaurantId, data, customer) {
-    if (customer.role !== "customer")
-      throw new ValidationError("Only customers can make reservations");
-
-    if (!restaurantId) throw new ValidationError("RestaurantId required");
-
-    const createDTO = reservationDTO.createReservationInputDTO(data);
-
-    dateTimeUtils.validateReservationDateTime(createDTO.date, createDTO.time);
-    createDTO.restaurantId = restaurantId;
-    createDTO.customerId = customer.id;
-
-    const restaurant = await restaurantRepository.findById(restaurantId);
-    if (!restaurant) {
-      throw new NotFoundError("Restaurant not found");
-    }
-
-    if (createDTO.persons > restaurant.capacity) {
-      throw new ValidationError("Persons exceed restaurant capacity");
-    }
-
-    // --- overbooking check ---
     const transaction = await sequelize.transaction();
     try {
+      if (customer.role !== "customer")
+        throw new ValidationError("Only customers can make reservations");
+
+      if (!restaurantId) throw new ValidationError("RestaurantId required");
+
+      const createDTO = reservationDTO.createReservationInputDTO(data);
+
+      dateTimeUtils.validateReservationDateTime(createDTO.date, createDTO.time);
+      createDTO.restaurantId = restaurantId;
+      createDTO.customerId = customer.id;
+      const restaurant = await restaurantRepository.findById(restaurantId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE, // 🔒 THIS IS THE KEY
+      });
+      if (!restaurant) {
+        throw new NotFoundError("Restaurant not found");
+      }
+
+      if (createDTO.persons > restaurant.capacity) {
+        throw new ValidationError("Persons exceed restaurant capacity");
+      }
+
+      // --- overbooking check ---
       const reservedTables = await reservationRepository.countActiveBySlot(
         restaurantId,
         createDTO.date,
@@ -73,7 +75,9 @@ module.exports = {
       }
 
       createDTO.status = "active";
-      const reservation = await reservationRepository.create(createDTO);
+      const reservation = await reservationRepository.create(createDTO, {
+        transaction,
+      });
       await transaction.commit();
       return reservationDTO.reservationOutputDTO(reservation);
     } catch (err) {
@@ -113,41 +117,46 @@ module.exports = {
    * @throws {ForbiddenError} If user attempts to modify another customer's reservation
    */
   async updateReservation(id, data, customer) {
-    if (customer.role !== "customer")
-      throw new ForbiddenError("Only customers can update reservations");
-
-    const existing = await reservationRepository.findById(id);
-    if (!existing) {
-      throw new NotFoundError("Reservation not found");
-    }
-
-    if (existing.customerId !== customer.id) {
-      throw new ForbiddenError(
-        "Not allowed to modify another person's reservation"
-      );
-    }
-
-    if (existing.status !== "active") {
-      throw new ValidationError("Only active reservations can be modified");
-    }
-
-    const updateDTO = reservationDTO.updateReservationInputDTO(data);
-
-    const newDate = updateDTO.date ?? existing.date;
-    const newTime = updateDTO.time ?? existing.time;
-    dateTimeUtils.validateReservationDateTime(newDate, newTime);
-
-    if ("customerId" in updateDTO || "restaurantId" in updateDTO) {
-      throw new ValidationError("Cannot modify reservation ownership");
-    }
-
     const transaction = await sequelize.transaction();
     try {
+      if (customer.role !== "customer")
+        throw new ForbiddenError("Only customers can update reservations");
+
+      const existing = await reservationRepository.findById(id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!existing) {
+        throw new NotFoundError("Reservation not found");
+      }
+
+      if (existing.customerId !== customer.id) {
+        throw new ForbiddenError(
+          "Not allowed to modify another person's reservation"
+        );
+      }
+
+      if (existing.status !== "active") {
+        throw new ValidationError("Only active reservations can be modified");
+      }
+
+      const updateDTO = reservationDTO.updateReservationInputDTO(data);
+
+      const newDate = updateDTO.date ?? existing.date;
+      const newTime = updateDTO.time ?? existing.time;
+      dateTimeUtils.validateReservationDateTime(newDate, newTime);
+
+      if ("customerId" in updateDTO || "restaurantId" in updateDTO) {
+        throw new ValidationError("Cannot modify reservation ownership");
+      }
       // Check overbooking only if date or time changed
       if (updateDTO.date || updateDTO.time) {
         const restaurant = await restaurantRepository.findById(
           existing.restaurantId,
-          { transaction }
+          {
+            transaction,
+            lock: transaction.LOCK.UPDATE,
+          }
         );
         if (!restaurant) throw new NotFoundError("Restaurant not found");
 
