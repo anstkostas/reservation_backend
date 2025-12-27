@@ -1,6 +1,10 @@
 const ENV = process.env.NODE_ENV || "development";
 require("dotenv").config({ path: `.env.${ENV}` });
 
+const SERVER = {
+  PORT: Number(process.env.PORT) || 3000,
+};
+
 const DB_CONFIG = {
   ENV: ENV,
   HOST: process.env.DB_HOST || "localhost",
@@ -16,4 +20,4 @@ const AUTH_CONFIG = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "2h",
 };
 
-module.exports = { env: ENV, DB_CONFIG, AUTH_CONFIG };
+module.exports = { ENV, SERVER, DB_CONFIG, AUTH_CONFIG };
