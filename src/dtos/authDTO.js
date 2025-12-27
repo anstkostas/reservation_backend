@@ -1,4 +1,4 @@
-const { userDTO } = require("../dtos");
+const userDTO = require("./userDTO.js");
 const { ValidationError } = require("../errors");
 
 module.exports = {

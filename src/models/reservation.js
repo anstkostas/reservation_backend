@@ -27,11 +27,11 @@ module.exports = (sequelize, dataTypes) => {
         defaultValue: "active",
       },
       restaurantId: {
-        type: dataTypes.UUIDV,
+        type: dataTypes.UUID,
         allowNull: false,
       },
       customerId: {
-        type: dataTypes.UUIDV,
+        type: dataTypes.UUID,
         allowNull: false,
       },
     },

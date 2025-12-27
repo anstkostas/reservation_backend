@@ -4,7 +4,7 @@ const { userRepository } = require("../repositories");
 const { ValidationError } = require("../errors");
 const { AUTH_LOGIN } = require("../config/env");
 const { authDTO } = require("../dtos");
-const { userService } = require("../services");
+const userService = require("./userService.js");
 
 module.exports = {
   async login(data) {

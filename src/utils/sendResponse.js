@@ -1,7 +1,6 @@
 const defaultMessages = {
   200: "Request successful",
   201: "Resource created successfully",
-  204: "No content",
 };
 
 module.exports = {

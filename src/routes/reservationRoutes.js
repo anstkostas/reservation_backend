@@ -1,7 +1,6 @@
 const express = require("express");
 const { reservationController } = require("../controllers");
-const { requireAuth } = require("../middleware");
-const { requireRole } = require("../middleware");
+const { requireAuth, requireRole } = require("../middlewares");
 
 const router = express.Router();
 
@@ -28,14 +27,14 @@ router.delete(
 // Owner routes
 router.post(
   "/reservations/:id/complete",
-  middlewares.requireAuth,
-  middlewares.requireRole("owner"),
+  requireAuth,
+  requireRole("owner"),
   reservationController.completeReservation
 );
 router.get(
   "/owner/reservations",
-  middlewares.requireAuth,
-  middlewares.requireRole("owner"),
+  requireAuth,
+  requireRole("owner"),
   reservationController.listActiveReservationsOfOwner
 );
 
