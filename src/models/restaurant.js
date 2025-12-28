@@ -21,17 +21,17 @@ module.exports = (sequelize, dataTypes) => {
       capacity: {
         type: dataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
       },
       logoUrl: {
         type: dataTypes.STRING,
         allowNull: false,
-        defaultValue: ""
+        defaultValue: "",
       },
       coverImageUrl: {
         type: dataTypes.STRING,
         allowNull: false,
-        defaultValue: ""
+        defaultValue: "",
       },
       ownerId: {
         type: dataTypes.UUID,
@@ -41,6 +41,7 @@ module.exports = (sequelize, dataTypes) => {
     },
     {
       tableName: "Restaurants",
+      schema: "dbo",
       timestamps: false,
     }
   );

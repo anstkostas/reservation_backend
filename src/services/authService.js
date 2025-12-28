@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { userRepository } = require("../repositories");
 const { ValidationError } = require("../errors");
-const { AUTH_LOGIN } = require("../config/env");
+const { AUTH_CONFIG } = require("../config/env.js");
 const { authDTO } = require("../dtos");
 const userService = require("./userService.js");
 
@@ -20,8 +20,8 @@ module.exports = {
     }
 
     const payload = { id: user.id, role: user.role };
-    const token = jwt.sign(payload, AUTH_LOGIN.JWT_SECRET, {
-      expiresIn: AUTH_LOGIN.JWT_EXPIRES_IN,
+    const token = jwt.sign(payload, AUTH_CONFIG.JWT_SECRET, {
+      expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN,
     });
 
     return loginOutputDTO(user, token);
@@ -35,8 +35,8 @@ module.exports = {
       role: user.role,
     };
 
-    const token = jwt.sign(payload, AUTH_LOGIN.JWT_SECRET, {
-      expiresIn: AUTH_LOGIN.JWT_EXPIRES_IN,
+    const token = jwt.sign(payload, AUTH_CONFIG.JWT_SECRET, {
+      expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN,
     });
 
     return authDTO.loginOutputDTO(user, token);

@@ -3,45 +3,63 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Reservations", {
-      id: {
-        type: Sequelize.UUID,
-        primaryKey: true,
-        allowNull: false,
-        defaultValue: Sequelize.UUIDV4,
+    await queryInterface.createTable(
+      {
+        tableName: "Reservations",
+        schema: "dbo",
       },
-      date: {
-        type: Sequelize.DATEONLY,
-        allowNull: false,
-      },
-      time: {
-        type: Sequelize.TIME,
-        allowNull: false,
-      },
-      persons: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      status: {
-        type: Sequelize.ENUM("active", "canceled", "completed"),
-        allowNull: false,
-        defaultValue: "active",
-      },
-      restaurantId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: "Restaurants",
-          key: "id",
+      {
+        id: {
+          type: Sequelize.UUID,
+          primaryKey: true,
+          allowNull: false,
+          defaultValue: Sequelize.UUIDV4,
         },
-        onUpdate: "CASCADE", // This fk follows the parent model id.
-        onDelete: "CASCADE", // This record is deleted if parent is deleted as well.
-      },
-      customerId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-      },
-    });
+        date: {
+          type: Sequelize.DATEONLY,
+          allowNull: false,
+        },
+        time: {
+          type: Sequelize.TIME,
+          allowNull: false,
+        },
+        persons: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
+        status: {
+          type: Sequelize.ENUM("active", "canceled", "completed"),
+          allowNull: false,
+          defaultValue: "active",
+        },
+        restaurantId: {
+          type: Sequelize.UUID,
+          allowNull: false,
+          references: {
+            model: {
+              tableName: "Restaurants",
+              schema: "dbo",
+            },
+            key: "id",
+          },
+          onUpdate: "CASCADE", // This fk follows the parent model id.
+          onDelete: "CASCADE", // This record is deleted if parent is deleted as well.
+        },
+        customerId: {
+          type: Sequelize.UUID,
+          allowNull: false,
+          references: {
+            model: {
+              tableName: "Users",
+              schema: "dbo",
+            },
+            key: "id",
+          },
+          onUpdate: "CASCADE",
+          onDelete: "CASCADE",
+        },
+      }
+    );
   },
 
   async down(queryInterface, Sequelize) {

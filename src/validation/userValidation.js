@@ -9,8 +9,8 @@ const createUserSchema = Joi.object({
     "string.pattern.base":
       "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
   }),
-  firstName: Joi.string().min(4).max(50).required(),
-  lastName: Joi.string().min(4).max(50).required(),
+  firstname: Joi.string().min(4).max(50).required(),
+  lastname: Joi.string().min(4).max(50).required(),
   role: Joi.string().valid("owner", "customer").required(),
 });
 
@@ -20,8 +20,8 @@ const updateUserSchema = Joi.object({
     "string.pattern.base":
       "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
   }),
-  firstName: Joi.string().min(4).max(50),
-  lastName: Joi.string().min(4).max(50),
+  firstname: Joi.string().min(4).max(50),
+  lastname: Joi.string().min(4).max(50),
   role: Joi.string().valid("owner", "customer").required(),
 }).min(1);
 

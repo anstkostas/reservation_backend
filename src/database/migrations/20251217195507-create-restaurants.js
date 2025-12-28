@@ -3,46 +3,58 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Restaurants", {
-      id: {
-        type: Sequelize.UUID,
-        primaryKey: true,
-        allowNull: false,
-        defaultValue: Sequelize.UUIDV4,
+    await queryInterface.createTable(
+      {
+        tableName: "Restaurants",
+        schema: "dbo",
       },
-      name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        defaultValue: "",
-      },
-      description: {
-        type: Sequelize.TEXT,
-        allowNull: false,
-        defaultValue: "",
-      },
-      capacity: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      logoUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      coverImageUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      ownerId: {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: "Users",
-          key: "id",
+      {
+        id: {
+          type: Sequelize.UUID,
+          primaryKey: true,
+          allowNull: false,
+          defaultValue: Sequelize.UUIDV4,
         },
-        onUpdate: "CASCADE",
-        onDelete: "SET NULL",
-      },
-    });
+        name: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          defaultValue: "",
+        },
+        description: {
+          type: Sequelize.TEXT,
+          allowNull: false,
+          defaultValue: "",
+        },
+        capacity: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          defaultValue: 0,
+        },
+        logoUrl: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          defaultValue: "",
+        },
+        coverImageUrl: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          defaultValue: "",
+        },
+        ownerId: {
+          type: Sequelize.UUID,
+          allowNull: true,
+          references: {
+            model: {
+              tableName: "Users",
+              schema: "dbo",
+            },
+            key: "id",
+          },
+          onUpdate: "CASCADE",
+          onDelete: "SET NULL",
+        },
+      }
+    );
   },
 
   async down(queryInterface, Sequelize) {

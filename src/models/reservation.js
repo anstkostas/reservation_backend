@@ -16,7 +16,8 @@ module.exports = (sequelize, dataTypes) => {
         type: dataTypes.TIME,
         allowNull: false,
       },
-      persons: {  // Informational field, 1 reservation -> 1 table(can hold infinite people)
+      persons: {
+        // Informational field, 1 reservation -> 1 table(can hold infinite people)
         type: dataTypes.INTEGER,
         allowNull: false,
         defaultValue: 1,
@@ -37,6 +38,7 @@ module.exports = (sequelize, dataTypes) => {
     },
     {
       tableName: "Reservations",
+      schema: "dbo",
       timestamps: false,
     }
   );

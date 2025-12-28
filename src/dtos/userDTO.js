@@ -2,8 +2,8 @@
 module.exports = {
   createUserInputDTO(data) {
     return {
-      firstName: data.firstName?.trim(),
-      lastName: data.lastName?.trim(),
+      firstname: data.firstname?.trim(),
+      lastname: data.lastname?.trim(),
       email: data.email?.trim().toLowerCase(),
       password: data.password, // NOTE service layer will hash
       restaurantId: data.restaurantId || null,
@@ -12,8 +12,8 @@ module.exports = {
 
   updateUserInputDTO(data) {
     const dto = {};
-    if (data.firstName !== undefined) dto.firstName = data.firstName.trim();
-    if (data.lastName !== undefined) dto.lastName = data.lastName.trim();
+    if (data.firstname !== undefined) dto.firstname = data.firstname.trim();
+    if (data.lastname !== undefined) dto.lastname = data.lastname.trim();
     if (data.email !== undefined) dto.email = data.email.trim().toLowerCase();
     if (data.password !== undefined) dto.password = data.password;
     // role is immutable, ignore if sent
@@ -24,8 +24,8 @@ module.exports = {
   userOutputDTO(user) {
     return {
       id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      firstname: user.firstname,
+      lastname: user.lastname,
       email: user.email,
       role: user.role,
     };

@@ -39,6 +39,8 @@ module.exports = {
       token,
       user: {
         id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
         email: user.email,
         role: user.role,
       },

@@ -17,7 +17,7 @@ module.exports = {
     try {
       const input = authDTO.signupInputDTO(req.body);
       const result = await authService.signup(input);
-      sendResponse(res, user, 201, "User created and logged in");
+      sendResponse(res, result, 201, "User created and logged in");
     } catch (err) {
       next(err);
     }
