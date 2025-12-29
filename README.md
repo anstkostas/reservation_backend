@@ -53,6 +53,11 @@ Run `npx sequelize-cli db:seed:all` to executal all seed files located in `/seed
 With `npx sequelize-cli db:seed:undo:all` sequelize reverts all seed files. To execute a specific file run `npx sequelize-cli db:seed --seed <seed-filename.js>`.
 For more information visit the [official site](https://sequelize.org/docs/v6/other-topics/migrations/).
 
+## require project directories
+
+Implemented an index.js policy. Centralized sub-directory's imports/exports in an index.js. To import specific file from that directory add only the path directory of the whole file, since node.js automaticaly looks for index.js.
+NOTE Don't add file with same name as the folder since only that will be imported.
+
 ## Repositories
 
 1. Encapsulate all **database access** using Sequelize models. Serve as Data Access Objects(DAOs).
@@ -87,11 +92,11 @@ Return only safe and necessary fields (exclude sensitive data like passwords).
 #### Example: UserOutputDTO
 
 ```js
-const UserOutputDTO = ({ id, email, firstName, lastName, role }) => ({
+const UserOutputDTO = ({ id, email, firstname, lastname, role }) => ({
   id,
   email,
-  firstName,
-  lastName,
+  firstname,
+  lastname,
   role,
 });
 ```
@@ -110,19 +115,21 @@ Enforce field formats, lengths etc.
 
 Password strength (8+ chars, uppercase, lowercase, number, special char)
 
-
 ## Service Layer
+
 Adds business logic.
 For user model
 
 #### 🏪 Restaurant Service
+
 - Enforce ownership (restaurant belongs to an owner)
 - - `ownerId` is injected by service (from auth context)
 - Restaurant ownership cannot be reassigned via update
 - Only owner can modify or delete their restaurant
 - `ownerId` immutable after creation
-  
+
 #### 📅 ReservationService
+
 - Implement soft delete
 - Reservation data must be from today up to two months from now.
 - persons must not be zero
@@ -134,6 +141,8 @@ For user model
 - Immutable fields are protected:
   - `customerId`
   - `restaurantId`
+
 ##### Reservation Lifecycle
+
 - `active` → `canceled`
 - `active` → `completed`
