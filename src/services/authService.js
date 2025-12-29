@@ -24,7 +24,7 @@ module.exports = {
       expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN,
     });
 
-    return loginOutputDTO(user, token);
+    return authDTO.loginOutputDTO(user, token);
   },
 
   async signup(data) {

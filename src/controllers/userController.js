@@ -7,7 +7,7 @@ module.exports = {
 
   async updateUser(req, res, next) {
     try {
-      const userId = Number(req.params.id);
+      const userId = req.params.id;
       const updatedUser = await userService.updateUser(userId, req.body);
       sendResponse(res, updatedUser);
     } catch (err) {
@@ -17,7 +17,9 @@ module.exports = {
 
   async getUserById(req, res, next) {
     try {
-      const userId = Number(req.params.id);
+      const userId = req.params.id;
+      console.log("userId");
+      console.log(userId);
       const user = await userService.getUserById(userId);
       sendResponse(res, user);
     } catch (err) {

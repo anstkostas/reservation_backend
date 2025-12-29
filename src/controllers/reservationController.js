@@ -19,7 +19,7 @@ module.exports = {
 
   async updateReservation(req, res, next) {
     try {
-      const reservationId = Number(req.params.id);
+      const reservationId = req.params.id;
       const updatedReservation = await reservationService.updateReservation(
         reservationId,
         req.body,

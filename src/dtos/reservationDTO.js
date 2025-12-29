@@ -4,9 +4,8 @@ module.exports = {
       date: data.date,
       time: data.time,
       persons: data.persons || 1,
-      restaurantId: data.restaurantId
       // status isnt provided by user
-      // customerIf from req.user.id(login user-auth)
+      // customerId from req.user.id(login user-auth)
     };
   },
 

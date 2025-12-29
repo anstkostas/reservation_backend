@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { NotAuthenticatedError } = require("../errors");
-const { AUTH_LOGIN } = require("../config/env");
+const { AUTH_CONFIG } = require("../config/env.js");
 
 module.exports = {
   /**
@@ -19,7 +19,7 @@ module.exports = {
     }
 
     try {
-      const payload = jwt.verify(token, AUTH_LOGIN.JWT_SECRET);
+      const payload = jwt.verify(token, AUTH_CONFIG.JWT_SECRET);
       req.user = { id: payload.id, role: payload.role };
       next();
     } catch (err) {
