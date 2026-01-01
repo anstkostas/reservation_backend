@@ -6,6 +6,8 @@
  */
 const express = require("express");
 const { authController } = require("../controllers");
+const { requireAuth } = require("../middlewares");
+const { sendResponse } = require("../utils");
 
 const router = express.Router();
 
@@ -49,7 +51,7 @@ router.post("/login", authController.login);
  *       - Auth
  *     summary: Register a new user
  *     description: Creates a new user and returns a JWT token
- *     security: []   # 👈 overrides global bearerAuth
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
@@ -95,5 +97,44 @@ router.post("/login", authController.login);
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post("/signup", authController.signup);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current authenticated user
+ *     tags: [Auth]
+ *     description: Returns user info based on JWT stored in HttpOnly cookie.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *                 message:
+ *                   type: string
+ *                   example: Request successful
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/me", requireAuth, (req, res) => {
+  sendResponse(res, { user: req.user });
+});
 
 module.exports = router;

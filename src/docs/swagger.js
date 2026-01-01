@@ -17,26 +17,22 @@ const swaggerSpec = swaggerJSDoc({
     ],
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
+        cookieAuth: {
+          type: "apiKey",
+          in: "cookie",
+          name: "accessToken",
         },
       },
       schemas: {
         AuthResponse: {
           type: "object",
           properties: {
-            token: {
-              type: "string",
-              description: "JWT access token",
-            },
             user: {
               $ref: "#/components/schemas/User",
             },
           },
           description:
-            "Response returned after a successful login or signup, containing the JWT token and user information.",
+            "Response returned after a successful login or signup, containing user information.",
         },
         User: {
           // userOutputDTO

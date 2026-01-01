@@ -1,29 +1,40 @@
 const jwt = require("jsonwebtoken");
+const { User } = require("../models");
 const { NotAuthenticatedError } = require("../errors");
 const { AUTH_CONFIG } = require("../config/env.js");
+const { userDTO } = require("../dtos");
 
 module.exports = {
   /**
-   * JWT authentication middleware.
-   * Verifies Bearer token and attaches { id, role } to req.user.
-   *
-   * @throws {NotAuthenticatedError} if token is missing or invalid
+   * Middleware to ensure the user is authenticated.
    */
-  requireAuth(req, res, next) {
-    const authHeader = req.headers.authorization;
-    const [scheme, token] = authHeader?.split(" ") ?? [];
-    if (scheme !== "Bearer" || !token) {
-      return next(
-        new NotAuthenticatedError("Missing or invalid authorization header")
-      );
-    }
-
+  async requireAuth(req, res, next) {
     try {
+      const token = req.cookies?.accessToken;
+      if (!token) {
+        return next(new NotAuthenticatedError());
+      }
+
       const payload = jwt.verify(token, AUTH_CONFIG.JWT_SECRET);
-      req.user = { id: payload.id, role: payload.role };
+
+      const user = await User.findByPk(payload.sub);
+
+      if (!user) {
+        return next(new NotAuthenticatedError("User not found"));
+      }
+
+      req.user = userDTO.userOutputDTO(user);
+
       next();
     } catch (err) {
-      next(new NotAuthenticatedError("Invalid or expired token"));
+      if (err.name === "TokenExpiredError") {
+        return next(new NotAuthenticatedError("Token expired"));
+      }
+      if (err.name === "JsonWebTokenError") {
+        return next(new NotAuthenticatedError("Invalid token"));
+      }
+
+      next(err);
     }
   },
 };

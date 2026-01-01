@@ -15,7 +15,7 @@ const router = express.Router();
  *     tags:
  *       - Reservations
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: restaurantId
@@ -87,7 +87,7 @@ router.post(
  *     tags:
  *       - Reservations
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -156,7 +156,7 @@ router.put(
  *     tags:
  *       - Reservations
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -224,7 +224,7 @@ router.delete(
  *     tags:
  *       - Reservations
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -290,7 +290,7 @@ router.post(
  *     tags:
  *       - Reservations
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: Active reservations retrieved successfully
