@@ -1,5 +1,6 @@
 const ENV = process.env.NODE_ENV || "development";
 require("dotenv").config({ path: `.env.${ENV}` });
+const ms = require("ms");
 
 const SERVER = {
   PORT: Number(process.env.PORT) || 3000,
@@ -20,4 +21,12 @@ const AUTH_CONFIG = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "2h",
 };
 
-module.exports = { ENV, SERVER, DB_CONFIG, AUTH_CONFIG };
+const COOKIE_CONFIG = {
+  NAME: process.env.COOKIE_NAME || "accessToken",
+  HTTP_ONLY: true,
+  SECURE: ENV === "production",
+  SAME_SITE: ENV === "production" ? "strict" : "lax",
+  MAX_AGE: ms(AUTH_CONFIG.JWT_EXPIRES_IN || "2h"),
+};
+
+module.exports = { ENV, SERVER, DB_CONFIG, AUTH_CONFIG, COOKIE_CONFIG };
