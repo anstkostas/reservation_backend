@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { sequelize } = require("../models");
 const { userRepository, restaurantRepository } = require("../repositories");
-const { userDTO } = require("../dtos");
+const { userDTO, restaurantDTO } = require("../dtos");
 const { NotFoundError, ValidationError, ForbiddenError } = require("../errors");
 
 // Object Literal Pattern
@@ -79,7 +79,7 @@ module.exports = {
         }
 
         const restaurant = await restaurantRepository.findById(
-          createDTO.restaurantId, 
+          createDTO.restaurantId,
           { transaction }
         );
         if (!restaurant) throw new NotFoundError("Restaurant not found");
@@ -172,8 +172,13 @@ module.exports = {
     }
   },
 
-  // Will be used to display no owned restaurants to be selected by users.
+  /**
+   * Lists restaurants that have no owner yet.
+   * @returns {Promise<Array>} Array of restaurant output DTOs
+   */
   async listUnownedRestaurants() {
-    return (await restaurantRepository.findAll()).filter((r) => !r.ownerId);
+    const allRestaurants = await restaurantRepository.findAll();
+    const unowned = allRestaurants.filter((r) => !r.ownerId);
+    return unowned.map((r) => restaurantDTO.restaurantOutputDTO(r));
   },
 };
