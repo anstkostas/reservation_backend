@@ -45,6 +45,41 @@ router.post("/login", authController.login);
 
 /**
  * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout the current user
+ *     description: Clears the JWT cookie (`accessToken`). User must be authenticated.
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Logged out successfully
+ *                 data:
+ *                   nullable: true
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post("/logout", requireAuth, authController.logout);
+
+/**
+ * @swagger
  * /auth/signup:
  *   post:
  *     tags:
