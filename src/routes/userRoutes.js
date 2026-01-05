@@ -30,11 +30,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get(
-  "/unowned-restaurants",
-  requireAuth,
-  userController.listUnownedRestaurants
-);
+router.get("/unowned-restaurants", userController.listUnownedRestaurants);
 
 /**
  * @swagger
