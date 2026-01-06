@@ -9,7 +9,7 @@ module.exports = {
     const router = express.Router();
     router.use("/auth", authRoutes);
     router.use("/users", userRoutes);
-    router.use("/", reservationRoutes);
+    router.use("/reservations", reservationRoutes);
     app.use("/api", router);
   },
 };

@@ -9,6 +9,8 @@ module.exports = {
    * Middleware to ensure the user is authenticated.
    */
   async requireAuth(req, res, next) {
+    if (req.method === "OPTIONS") return next();
+
     try {
       const token = req.cookies?.accessToken;
       if (!token) {

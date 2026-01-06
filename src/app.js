@@ -1,18 +1,24 @@
 const express = require("express");
 const cors = require("cors");
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./docs/swagger');
+const { FRONTEND_SERVER } = require("./config/env.js");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs/swagger");
 const { registerRoutes } = require("./routes");
 const { globalErrorHandler } = require("./utils/");
 
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: FRONTEND_SERVER,
+    credentials: true,
+  })
+);
 
 registerRoutes(app);
 
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // 404
 app.use((req, res) => {

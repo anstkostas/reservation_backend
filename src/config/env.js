@@ -4,7 +4,10 @@ const ms = require("ms");
 
 const SERVER = {
   PORT: Number(process.env.PORT) || 3000,
-};
+}
+
+const FRONTEND_SERVER =
+  ENV === "development" ? "http://localhost:3000" : process.env.FRONTEND_URL;
 
 const DB_CONFIG = {
   ENV: ENV,
@@ -29,4 +32,11 @@ const COOKIE_CONFIG = {
   MAX_AGE: ms(AUTH_CONFIG.JWT_EXPIRES_IN || "2h"),
 };
 
-module.exports = { ENV, SERVER, DB_CONFIG, AUTH_CONFIG, COOKIE_CONFIG };
+module.exports = {
+  ENV,
+  SERVER,
+  FRONTEND_SERVER,
+  DB_CONFIG,
+  AUTH_CONFIG,
+  COOKIE_CONFIG,
+};
