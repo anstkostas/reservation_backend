@@ -13,7 +13,7 @@ const router = express.Router();
  *     summary: List unowned restaurants
  *     description: Returns all restaurants that do not have an owner assigned
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: Unowned restaurants fetched successfully
@@ -30,11 +30,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get(
-  "/unowned-restaurants",
-  requireAuth,
-  userController.listUnownedRestaurants
-);
+router.get("/unowned-restaurants", userController.listUnownedRestaurants);
 
 /**
  * @swagger
@@ -45,7 +41,7 @@ router.get(
  *     tags:
  *       - Users
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -93,7 +89,7 @@ router.get("/:id", requireAuth, userController.getUserById);
  *     tags:
  *       - Users
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: email
@@ -142,7 +138,7 @@ router.get("/email/:email", requireAuth, userController.getUserByEmail);
  *     tags:
  *       - Users
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id

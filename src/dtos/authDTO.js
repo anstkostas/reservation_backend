@@ -31,19 +31,15 @@ module.exports = {
   /**
    * Standardizes login output
    * @param {object} user - user object from DB
-   * @param {string} token - JWT
-   * @returns {{token: string, user: {id: number, email: string, role: string}}}
+   * @returns {{user: {id: number, firstname:string, lastname:string, email: string, role: string}}}
    */
-  loginOutputDTO(user, token) {
+  loginOutputDTO(user) {
     return {
-      token,
-      user: {
-        id: user.id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        role: user.role,
-      },
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      role: user.role,
     };
   },
 };
