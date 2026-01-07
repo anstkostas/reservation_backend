@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const { FRONTEND_SERVER } = require("./config/env.js");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swagger");
@@ -8,6 +9,7 @@ const { globalErrorHandler } = require("./utils/");
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
