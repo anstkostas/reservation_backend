@@ -12,14 +12,16 @@ module.exports = {
     if (req.method === "OPTIONS") return next();
 
     try {
-      const token = req.cookies?.accessToken;
+      if (req.cookies === undefined) {
+        return next(new NotAuthenticatedError("Cookie parser middleware not configured"));
+      }
+      const token = req.cookies.accessToken;
       if (!token) {
-        return next(new NotAuthenticatedError());
+        return next(new NotAuthenticatedError("No authentication token provided"));
       }
 
       const payload = jwt.verify(token, AUTH_CONFIG.JWT_SECRET);
-
-      const user = await User.findByPk(payload.sub);
+      const user = await User.findByPk(payload.id);
 
       if (!user) {
         return next(new NotAuthenticatedError("User not found"));
