@@ -2,6 +2,7 @@ const express = require("express");
 
 const authRoutes = require("./authRoutes.js");
 const userRoutes = require("./userRoutes.js");
+const restaurantRoutes = require("./restaurantRoutes.js");
 const reservationRoutes = require("./reservationRoutes.js");
 
 module.exports = {
@@ -9,6 +10,7 @@ module.exports = {
     const router = express.Router();
     router.use("/auth", authRoutes);
     router.use("/users", userRoutes);
+    router.use("/restaurants", restaurantRoutes);
     router.use("/reservations", reservationRoutes);
     app.use("/api", router);
   },
