@@ -23,7 +23,6 @@ module.exports = {
     const token = jwt.sign(payload, AUTH_CONFIG.JWT_SECRET, {
       expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN,
     });
-
     return authDTO.loginOutputDTO(user, token);
   },
 

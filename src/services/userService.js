@@ -11,7 +11,7 @@ module.exports = {
     if (!user) {
       throw new NotFoundError("User not found");
     }
-    return user;
+    return userDTO.userOutputDTO(user);
   },
 
   async getUserByEmail(email) {
@@ -19,7 +19,7 @@ module.exports = {
     if (!user) {
       throw new NotFoundError("User not found");
     }
-    return user;
+    return userDTO.userOutputDTO(user);
   },
 
   /**

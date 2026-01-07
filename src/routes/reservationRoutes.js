@@ -8,7 +8,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /restaurants/{restaurantId}/reservations:
+ * /reservations/restaurants/{restaurantId}:
  *   post:
  *     summary: Create a new reservation
  *     description: Creates a reservation for a given restaurant. Only users with the "customer" role can create reservations.
@@ -72,7 +72,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post(
-  "/restaurants/:restaurantId/reservations",
+  "/restaurants/:restaurantId",
   requireAuth,
   requireRole("customer"),
   reservationController.createReservation
@@ -138,10 +138,13 @@ router.post(
  *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Reservation or restaurant not found
- *         conten*
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.put(
-  "/reservations/:id",
+  "/:id",
   requireAuth,
   requireRole("customer"),
   reservationController.updateReservation
@@ -207,7 +210,7 @@ router.put(
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.delete(
-  "/reservations/:id",
+  "/:id",
   requireAuth,
   requireRole("customer"),
   reservationController.cancelReservation
@@ -275,7 +278,7 @@ router.delete(
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post(
-  "/reservations/:id/complete",
+  "/:id/complete",
   requireAuth,
   requireRole("owner"),
   reservationController.completeReservation
@@ -283,7 +286,7 @@ router.post(
 
 /**
  * @swagger
- * /owner/reservations:
+ * /reservations/owner/reservations:
  *   get:
  *     summary: List all active reservations for the owner's restaurant
  *     description: Retrieves all active reservations for the restaurant owned by the authenticated user. Only owners can access this endpoint.
