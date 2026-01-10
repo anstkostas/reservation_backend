@@ -11,6 +11,12 @@ const app = express();
 
 app.use(cookieParser());
 app.use(express.json());
+
+// Enable trust proxy for secure cookies behind a reverse proxy (Heroku, Render, etc.)
+// Where I deploy MUST set .env to "production"
+// TODO To deploy switch to PostgreSQL and use Render.
+app.set("trust proxy", 1);
+
 app.use(
   cors({
     origin: FRONTEND_SERVER,

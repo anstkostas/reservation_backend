@@ -28,7 +28,7 @@ const COOKIE_CONFIG = {
   NAME: process.env.COOKIE_NAME || "accessToken",
   HTTP_ONLY: true,
   SECURE: ENV === "production",
-  SAME_SITE: ENV === "production" ? "strict" : "lax",
+  SAME_SITE: ENV === "production" ? "none" : "lax",
   MAX_AGE: ms(AUTH_CONFIG.JWT_EXPIRES_IN || "2h"),
 };
 
