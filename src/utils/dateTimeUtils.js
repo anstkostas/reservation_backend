@@ -69,7 +69,7 @@ module.exports = {
     const month = String(randomDate.getMonth() + 1).padStart(2, "0");
     const day = String(randomDate.getDate()).padStart(2, "0");
     const newDate = `${year}-${month}-${day}`;
-    const inPast = isInPast(randomDate);
+    const inPast = randomDate < today;
     return { newDate, inPast };
   },
 

@@ -48,7 +48,7 @@ Create a `.env` file with the following values:
 ## Migrations & Seed Data
 
 Run `npx sequelize-cli db:migrate` to execute all migration files located in `/migrations` directory.
-With `npx sequelize-cli db:migrate:undo:all` sequelize reverts all migration files. To execute a specific file run `npm sequelize-cli --to db:migrate <name-of-directory>`, add `:undo` for the oposite cmd.
+With `npx sequelize-cli db:migrate:undo:all` sequelize reverts all migration files. To execute a specific file run `npx sequelize-cli --to db:migrate <name-of-directory>`, add `:undo` for the oposite cmd.
 Run `npx sequelize-cli db:seed:all` to executal all seed files located in `/seeders` directory.
 With `npx sequelize-cli db:seed:undo:all` sequelize reverts all seed files. To execute a specific file run `npx sequelize-cli db:seed --seed <seed-filename.js>`.
 For more information visit the [official site](https://sequelize.org/docs/v6/other-topics/migrations/).
