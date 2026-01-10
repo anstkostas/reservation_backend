@@ -266,4 +266,16 @@ module.exports = {
     // );
     return reservations.map(reservationDTO.reservationOutputDTO); // A more consice way!
   },
+
+  async listCustomerReservations(customer) {
+    if (customer.role !== "customer") {
+      throw new ForbiddenError("Only customers can view their reservations");
+    }
+
+    const reservations = await reservationRepository.findAll({
+      customerId: customer.id,
+    });
+
+    return reservations.map(reservationDTO.reservationOutputDTO);
+  },
 };

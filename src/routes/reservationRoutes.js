@@ -80,6 +80,54 @@ router.post(
 
 /**
  * @swagger
+ * /reservations/my-reservations:
+ *   get:
+ *     summary: List all active reservations for the authenticated customer
+ *     description: Retrieves all reservations (active, canceled, completed) for the authenticated customer.
+ *     tags:
+ *       - Reservations
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Reservations retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Reservations fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Reservation'
+ *       401:
+ *         description: Unauthorized (missing/invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden (user is not a customer)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/my-reservations",
+  requireAuth,
+  requireRole("customer"),
+  reservationController.listCustomerReservations
+);
+
+/**
+ * @swagger
  * /reservations/{id}:
  *   put:
  *     summary: Update an existing reservation

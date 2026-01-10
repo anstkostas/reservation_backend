@@ -16,6 +16,7 @@ module.exports = {
         return next(new NotAuthenticatedError("Cookie parser middleware not configured"));
       }
       const token = req.cookies.accessToken;
+
       if (!token) {
         return next(new NotAuthenticatedError("No authentication token provided"));
       }

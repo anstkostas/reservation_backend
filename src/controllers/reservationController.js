@@ -66,4 +66,15 @@ module.exports = {
       next(err);
     }
   },
+
+  async listCustomerReservations(req, res, next) {
+    try {
+      const reservations = await reservationService.listCustomerReservations(
+        req.user
+      );
+      return sendResponse(res, reservations);
+    } catch (err) {
+      next(err);
+    }
+  },
 };
