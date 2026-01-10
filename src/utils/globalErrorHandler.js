@@ -8,7 +8,7 @@ const {
 
 module.exports = {
   globalErrorHandler(err, req, res, next) {
-    console.error(err);
+    console.error("Global error handler logs: ", err);
 
     let statusCode = 500;
     let message = "Internal Server Error";

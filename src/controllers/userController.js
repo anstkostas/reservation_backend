@@ -18,8 +18,6 @@ module.exports = {
   async getUserById(req, res, next) {
     try {
       const userId = req.params.id;
-      console.log("userId");
-      console.log(userId);
       const user = await userService.getUserById(userId);
       sendResponse(res, user);
     } catch (err) {

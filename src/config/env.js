@@ -3,11 +3,11 @@ require("dotenv").config({ path: `.env.${ENV}` });
 const ms = require("ms");
 
 const SERVER = {
-  PORT: Number(process.env.PORT) || 3000,
+  PORT: Number(process.env.PORT) || 22000,
 }
 
 const FRONTEND_SERVER =
-  ENV === "development" ? "http://localhost:3000" : process.env.FRONTEND_URL;
+  ENV === "development" ? "http://localhost:22001" : process.env.FRONTEND_URL;
 
 const DB_CONFIG = {
   ENV: ENV,

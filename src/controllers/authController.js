@@ -14,8 +14,7 @@ module.exports = {
         sameSite: COOKIE_CONFIG.SAME_SITE,
         maxAge: COOKIE_CONFIG.MAX_AGE,
       });
-      const userData = authDTO.loginOutputDTO(user);
-      sendResponse(res, { user: userData });
+      sendResponse(res, user, 200, "Logged in successfully");
     } catch (err) {
       next(err);
     }
@@ -45,8 +44,7 @@ module.exports = {
         sameSite: COOKIE_CONFIG.SAME_SITE,
         maxAge: COOKIE_CONFIG.MAX_AGE,
       });
-      const userData = authDTO.loginOutputDTO(user);
-      sendResponse(res, { user: userData }, 201, "User created and logged in");
+      sendResponse(res, user, 201, "User created and logged in");
     } catch (err) {
       next(err);
     }

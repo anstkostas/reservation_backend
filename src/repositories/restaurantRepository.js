@@ -9,9 +9,8 @@ module.exports = {
     return Restaurant.findAll();
   },
 
-  async update(id, updatedData, options = {}) {
-    const restaurant = await Restaurant.findByPk(id, options);
-    if (!restaurant) return null;
-    return restaurant.update(updatedData);
+  async findByOwnerId(ownerId) {
+    console.log(ownerId);
+    return Restaurant.findOne({ where: { ownerId: ownerId } });
   },
 };
