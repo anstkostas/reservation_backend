@@ -86,11 +86,9 @@ module.exports = {
         if (restaurant.ownerId)
           throw new ValidationError("Restaurant already has an owner");
 
-        await restaurantRepository.update(
+        await restaurantRepository.assignOwner(
           createDTO.restaurantId,
-          {
-            ownerId: user.id,
-          },
+          user.id,
           { transaction }
         );
       }

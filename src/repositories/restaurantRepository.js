@@ -10,7 +10,12 @@ module.exports = {
   },
 
   async findByOwnerId(ownerId) {
-    console.log(ownerId);
     return Restaurant.findOne({ where: { ownerId: ownerId } });
+  },
+
+  async assignOwner(id, ownerId, options = {}) {
+    const restaurant = await Restaurant.findByPk(id, options);
+    if (!restaurant) return null;
+    return restaurant.update({ ownerId }, options);
   },
 };
