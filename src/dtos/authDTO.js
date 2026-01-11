@@ -17,7 +17,7 @@ module.exports = {
   /**
    * Validates signup input data.
    * @param {object} data - Raw request body
-   * @returns {{email: string, password: string, name?: string, restaurantId?: number}}
+   * @returns {{email: string, password: string, firstname?: string, lastname?: string, restaurantId?: number}}
    * @throws {ValidationError} if required fields are missing
    */
   signupInputDTO(data) {

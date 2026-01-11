@@ -4,7 +4,7 @@ module.exports = {
     return {
       firstname: data.firstname?.trim(),
       lastname: data.lastname?.trim(),
-      email: data.email?.trim().toLowerCase(),
+      email: data.email.trim().toLowerCase(),
       password: data.password, // NOTE service layer will hash
       restaurantId: data.restaurantId || null,
     };
