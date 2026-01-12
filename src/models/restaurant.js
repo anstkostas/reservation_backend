@@ -18,6 +18,16 @@ module.exports = (sequelize, dataTypes) => {
         allowNull: false,
         defaultValue: "",
       },
+      address: {
+        type: dataTypes.STRING,
+        allowNull: false,
+        defaultValue: "",
+      },
+      phone: {
+        type: dataTypes.STRING,
+        allowNull: false,
+        defaultValue: "",
+      },
       capacity: {
         type: dataTypes.INTEGER,
         allowNull: false,
