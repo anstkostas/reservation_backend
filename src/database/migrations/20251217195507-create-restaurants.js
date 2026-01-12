@@ -25,6 +25,16 @@ module.exports = {
           allowNull: false,
           defaultValue: "",
         },
+        address: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          defaultValue: "",
+        },
+        phone: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          defaultValue: "",
+        },
         capacity: {
           type: Sequelize.INTEGER,
           allowNull: false,
