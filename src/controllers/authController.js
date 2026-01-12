@@ -49,4 +49,13 @@ module.exports = {
       next(err);
     }
   },
+
+  async getCurrentUser(req, res, next) {
+    try {
+      // req.user is populated by valid JWT in requireAuth middleware
+      sendResponse(res, req.user, 200, "Current user info");
+    } catch (err) {
+      next(err);
+    }
+  },
 };

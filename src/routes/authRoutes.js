@@ -168,8 +168,6 @@ router.post("/signup", authController.signup);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/me", requireAuth, (req, res) => {
-  sendResponse(res, { user: req.user });
-});
+router.get("/me", requireAuth, authController.getCurrentUser);
 
 module.exports = router;
