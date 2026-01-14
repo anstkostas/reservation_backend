@@ -50,14 +50,10 @@ module.exports = {
       createDTO.customerId = customer.id;
       const restaurant = await restaurantRepository.findById(restaurantId, {
         transaction,
-        lock: transaction.LOCK.UPDATE, // 🔒 THIS IS THE KEY
+        lock: transaction.LOCK.UPDATE, // Only one query can access this row at a time locking it until the transaction is completed, prevents race conditions
       });
       if (!restaurant) {
         throw new NotFoundError("Restaurant not found");
-      }
-
-      if (createDTO.persons > restaurant.capacity) {
-        throw new ValidationError("Persons exceed restaurant capacity");
       }
 
       // --- overbooking check ---
@@ -144,6 +140,7 @@ module.exports = {
 
       const newDate = updateDTO.date ?? existing.date;
       const newTime = updateDTO.time ?? existing.time;
+
       dateTimeUtils.validateReservationDateTime(newDate, newTime);
 
       if ("customerId" in updateDTO || "restaurantId" in updateDTO) {
@@ -217,9 +214,13 @@ module.exports = {
     return reservationDTO.reservationOutputDTO(updated);
   },
 
-  async completeReservation(id, user) {
+  async resolveReservation(id, status, user) {
     if (user.role !== "owner") {
-      throw new ValidationError("Only owners can complete reservations");
+      throw new ValidationError("Only owners can mark a reservation as completed or no-show");
+    }
+
+    if (!["completed", "no-show"].includes(status)) {
+      throw new ValidationError("Invalid status update");
     }
 
     const restaurant = await restaurantRepository.findByOwnerId(user.id);
@@ -231,23 +232,23 @@ module.exports = {
 
     if (reservation.restaurantId !== restaurant.id) {
       throw new ForbiddenError(
-        "Cannot complete reservation for another restaurant"
+        "Cannot resolve reservation for another restaurant"
       );
     }
 
     if (reservation.status !== "active") {
-      throw new ValidationError("Only active reservations can be completed");
+      throw new ValidationError("Only active reservations can be resolved");
     }
 
     // Update status
     const updated = await reservationRepository.update(id, {
-      status: "completed",
+      status: status,
     });
 
     return reservationDTO.reservationOutputDTO(updated);
   },
 
-  async listActiveReservationsOfOwner(user) {
+  async listOwnerReservations(user) {
     if (user.role === "customer") {
       throw new ForbiddenError("Only owners can view active reservations");
     }
@@ -258,13 +259,13 @@ module.exports = {
 
     const reservations = await reservationRepository.findAll({
       restaurantId: restaurant.id,
-      status: "active",
+      // Status not filtered, returns all
     });
 
     // return reservations.map((reservation) =>
     //   reservationDTO.reservationOutputDTO(reservation)
     // );
-    return reservations.map(reservationDTO.reservationOutputDTO); // A more consice way!
+    return reservations.map(reservationDTO.reservationOutputDTO); // A more consice way of omitting parameter.
   },
 
   async listCustomerReservations(customer) {
@@ -275,7 +276,6 @@ module.exports = {
     const reservations = await reservationRepository.findAll({
       customerId: customer.id,
     });
-
     return reservations.map(reservationDTO.reservationOutputDTO);
   },
 };
