@@ -1,3 +1,5 @@
+const { dateTimeUtils } = require("../utils");
+
 module.exports = {
   createReservationInputDTO(data) {
     return {
@@ -22,11 +24,20 @@ module.exports = {
     return {
       id: dbData.id,
       date: dbData.date,
-      time: dbData.time,
+      time: dateTimeUtils.normalizeDBTime(dbData.time),
       persons: dbData.persons,
       status: dbData.status,
       restaurantId: dbData.restaurantId,
+      restaurantName: dbData.restaurant?.name,
+      restaurantAddress: dbData.restaurant?.address,
+      restaurantPhone: dbData.restaurant?.phone,
       customerId: dbData.customerId,
+      customer: dbData.customer ? {
+        id: dbData.customer.id,
+        firstname: dbData.customer.firstname,
+        lastname: dbData.customer.lastname,
+        email: dbData.customer.email
+      } : null,
     };
   },
 };
