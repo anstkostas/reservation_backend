@@ -326,10 +326,10 @@ router.delete(
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post(
-  "/:id/complete",
+  "/:id/resolve",
   requireAuth,
   requireRole("owner"),
-  reservationController.completeReservation
+  reservationController.resolveReservation
 );
 
 /**
@@ -380,10 +380,10 @@ router.post(
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get(
-  "/owner/reservations",
+  "/owner-reservations",
   requireAuth,
   requireRole("owner"),
-  reservationController.listActiveReservationsOfOwner
+  reservationController.listOwnerReservations
 );
 
 module.exports = router;
