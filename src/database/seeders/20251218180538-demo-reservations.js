@@ -27,7 +27,7 @@ module.exports = {
         date: randDate.newDate,
         time: getRandomTime(),
         persons: Math.floor(Math.random() * 10) + 2,
-        status: randDate.inPast ? "completed" : "active",
+        status: randDate.inPast ? Math.random() < 0.6 ? "completed" : "no-show" : "active",
         customerId: random(customers)?.id ?? null,
         restaurantId: random(restaurants)?.id ?? null,
       });
