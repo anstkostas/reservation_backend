@@ -1,4 +1,4 @@
-const { Reservation } = require("../models");
+const { Reservation, Restaurant, User } = require("../models");
 
 module.exports = {
   async create(reservationData, options = {}) {
@@ -13,7 +13,16 @@ module.exports = {
     const where = {};
     if (filter.restaurantId) where.restaurantId = filter.restaurantId;
     if (filter.customerId) where.customerId = filter.customerId;
-    return Reservation.findAll({ where });
+    if (filter.status) where.status = filter.status;
+
+    return Reservation.findAll({
+      where,
+      include: [
+        { model: Restaurant, as: 'restaurant', attributes: ['name', 'id', 'address', 'phone'] },
+        { model: User, as: 'customer', attributes: ['id', 'firstname', 'lastname', 'email'] }
+      ],
+      order: [['date', 'DESC'], ['time', 'DESC']]
+    });
   },
 
   async update(id, updatedData) {
