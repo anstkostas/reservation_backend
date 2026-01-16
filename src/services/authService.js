@@ -26,6 +26,13 @@ module.exports = {
     return authDTO.loginOutputDTO(user, token);
   },
 
+  /**
+   * Signs up a new user.
+   *
+   * @async
+   * @param {Object} data - The signup data.
+   * @returns {Promise<Object>} The login output DTO containing the newly created user and token.
+   */
   async signup(data) {
     const user = await userService.createUser(data);
 
