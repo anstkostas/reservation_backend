@@ -6,22 +6,6 @@ const { NotFoundError, ValidationError, ForbiddenError } = require("../errors");
 
 // Object Literal Pattern
 module.exports = {
-  async getUserById(id) {
-    const user = await userRepository.findById(id);
-    if (!user) {
-      throw new NotFoundError("User not found");
-    }
-    return userDTO.userOutputDTO(user);
-  },
-
-  async getUserByEmail(email) {
-    const user = await userRepository.findByEmail(email);
-    if (!user) {
-      throw new NotFoundError("User not found");
-    }
-    return userDTO.userOutputDTO(user);
-  },
-
   /**
    * Creates a new user and (optionally) assigns restaurant ownership.
    *
@@ -96,73 +80,6 @@ module.exports = {
       return userDTO.userOutputDTO(user);
     } catch (err) {
       await transaction.rollback();
-      if (err.name === "SequelizeValidationError") {
-        throw ValidationError.fromSequelize(err);
-      }
-      throw err;
-    }
-  },
-
-  /**
-   * Updates mutable user fields.
-   *
-   * IMPORTANT:
-   * This method intentionally uses a MINIMAL try/catch block.
-   *
-   * Reason:
-   * - Only Sequelize validation errors should be normalized
-   * - Business logic errors must NOT be masked or reclassified
-   * - Masking errors here would break global error handling semantics
-   *
-   * Business rules enforced:
-   * - Only whitelisted fields may be updated
-   * - Email uniqueness is revalidated
-   * - Password is rehashed if updated
-   * - Ownership and foreign keys are immutable
-   *
-   * Error handling:
-   * - No transaction is required (single write operation)
-   * - SequelizeValidationError is normalized
-   * - All other errors propagate unchanged
-   *
-   * @param {number} id - User identifier
-   * @param {Object} data - Partial update payload
-   * @returns {Promise<Object>} Updated user output DTO
-   * @throws {ValidationError} If no valid fields or uniqueness violated
-   * @throws {ForbiddenError} If attempting to modify immutable fields
-   * @throws {NotFoundError} If user does not exist
-   */
-  async updateUser(id, data) {
-    const updateDTO = userDTO.updateUserInputDTO(data);
-    // Check DTO if empty bc data could only have invalid fields.
-    if (Object.keys(updateDTO).length === 0) {
-      throw new ValidationError("No fields to update");
-    }
-    if (updateDTO.email) {
-      const exists = await userRepository.findByEmail(updateDTO.email);
-      if (exists && exists.id !== id) {
-        throw new ValidationError("Email already in use", [
-          { field: "email", message: "Email already in use" },
-        ]);
-      }
-    }
-    if ("customerId" in updateDTO || "restaurantId" in updateDTO) {
-      throw new ForbiddenError("Cannot modify reservation ownership");
-    }
-
-    if (updateDTO.password) {
-      updateDTO.password = await bcrypt.hash(updateDTO.password, 10);
-    }
-
-    try {
-      // Wrap only input directly related calls to the db with this error. For example completeReservation shouldn't have this bc if Sequelize throws error it wouldnt be a Validation so with this method I would mask it as one.
-      const updated = await userRepository.update(id, updateDTO);
-      if (!updated) {
-        throw new NotFoundError("User not found");
-      }
-
-      return userDTO.userOutputDTO(updated);
-    } catch (err) {
       if (err.name === "SequelizeValidationError") {
         throw ValidationError.fromSequelize(err);
       }

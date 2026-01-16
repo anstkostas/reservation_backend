@@ -10,17 +10,6 @@ module.exports = {
     };
   },
 
-  updateUserInputDTO(data) {
-    const dto = {};
-    if (data.firstname !== undefined) dto.firstname = data.firstname.trim();
-    if (data.lastname !== undefined) dto.lastname = data.lastname.trim();
-    if (data.email !== undefined) dto.email = data.email.trim().toLowerCase();
-    if (data.password !== undefined) dto.password = data.password;
-    // role is immutable, ignore if sent
-    // restaurantId is immutable once assigned
-    return dto;
-  },
-
   userOutputDTO(user) {
     return {
       id: user.id,

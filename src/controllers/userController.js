@@ -5,35 +5,15 @@ module.exports = {
   // ❌ No create user here...
   // endpoint is at authController, this controller handles authenticated user operations.
 
-  async updateUser(req, res, next) {
-    try {
-      const userId = req.params.id;
-      const updatedUser = await userService.updateUser(userId, req.body);
-      sendResponse(res, updatedUser);
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async getUserById(req, res, next) {
-    try {
-      const userId = req.params.id;
-      const user = await userService.getUserById(userId);
-      sendResponse(res, user);
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async getUserByEmail(req, res, next) {
-    try {
-      const user = await userService.getUserByEmail(req.params.email);
-      return sendResponse(res, user);
-    } catch (err) {
-      next(err);
-    }
-  },
-
+  /**
+   * Lists restaurants that do not have an owner.
+   *
+   * @async
+   * @param {Object} req - The request object.
+   * @param {Object} res - The response object.
+   * @param {Function} next - The next middleware function.
+   * @returns {Promise<void>}
+   */
   async listUnownedRestaurants(req, res, next) {
     try {
       const restaurants = await userService.listUnownedRestaurants();
