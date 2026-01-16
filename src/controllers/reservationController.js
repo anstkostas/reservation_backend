@@ -1,5 +1,6 @@
 const { reservationService } = require("../services");
 const { sendResponse } = require("../utils/");
+const { HTTP_STATUS, RESPONSE_MESSAGES, RESERVATION_STATUS } = require("../constants");
 
 // NOTE req.user comes from auth middleware.
 module.exports = {
@@ -11,7 +12,7 @@ module.exports = {
         req.body,
         req.user
       );
-      return sendResponse(res, reservation, 201, "Reservation created successfully");
+      return sendResponse(res, reservation, HTTP_STATUS.CREATED, RESPONSE_MESSAGES.RESERVATION.CREATED);
     } catch (err) {
       next(err);
     }
@@ -25,7 +26,7 @@ module.exports = {
         req.body,
         req.user
       );
-      return sendResponse(res, updatedReservation, 200, "Reservation updated successfully");
+      return sendResponse(res, updatedReservation, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.UPDATED);
     } catch (err) {
       next(err);
     }
@@ -38,7 +39,7 @@ module.exports = {
         id,
         req.user
       );
-      return sendResponse(res, canceledReservation, 200, "Reservation canceled successfully");
+      return sendResponse(res, canceledReservation, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.CANCELED);
     } catch (err) {
       next(err);
     }
@@ -53,10 +54,10 @@ module.exports = {
         status,
         req.user
       );
-      const message = status === 'completed'
-        ? "Reservation successfully updated as completed"
-        : "Reservation successfully updated as no-show";
-      return sendResponse(res, resolvedReservation, 200, message);
+      const message = status === RESERVATION_STATUS.COMPLETED
+        ? RESPONSE_MESSAGES.RESERVATION.COMPLETED
+        : RESPONSE_MESSAGES.RESERVATION.NO_SHOW;
+      return sendResponse(res, resolvedReservation, HTTP_STATUS.OK, message);
     } catch (err) {
       next(err);
     }
@@ -66,7 +67,8 @@ module.exports = {
     try {
       const reservations =
         await reservationService.listOwnerReservations(req.user);
-      return sendResponse(res, reservations);
+      // Use explicit status and message for consistency
+      return sendResponse(res, reservations, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.RETRIEVED);
     } catch (err) {
       next(err);
     }
@@ -77,7 +79,7 @@ module.exports = {
       const reservations = await reservationService.listCustomerReservations(
         req.user
       );
-      return sendResponse(res, reservations);
+      return sendResponse(res, reservations, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.RETRIEVED);
     } catch (err) {
       next(err);
     }

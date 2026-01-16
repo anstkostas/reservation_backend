@@ -6,6 +6,8 @@ const {
 const { reservationDTO } = require("../dtos");
 const { dateTimeUtils } = require("../utils");
 const { NotFoundError, ValidationError, ForbiddenError } = require("../errors");
+const { RESERVATION_STATUS } = require("../constants");
+
 
 module.exports = {
   /**
@@ -18,8 +20,7 @@ module.exports = {
    *
    * Business rules enforced:
    * - Only customers can create reservations.
-   * - Reservation date and time are validated (not in the past, within allowed range).
-   * - Number of persons cannot exceed restaurant capacity.
+   * - Reservation date and time are validated (not in the past, within allowed range of two months).
    * - Overbooking prevention: active reservations for the same slot cannot exceed capacity.
    * - Status is set to "active" on creation.
    *
@@ -70,7 +71,7 @@ module.exports = {
         );
       }
 
-      createDTO.status = "active";
+      createDTO.status = RESERVATION_STATUS.ACTIVE;
       const reservation = await reservationRepository.create(createDTO, {
         transaction,
       });
@@ -132,7 +133,7 @@ module.exports = {
         );
       }
 
-      if (existing.status !== "active") {
+      if (existing.status !== RESERVATION_STATUS.ACTIVE) {
         throw new ValidationError("Only active reservations can be modified");
       }
 
@@ -191,7 +192,17 @@ module.exports = {
     }
   },
 
-  // soft-delete
+  /**
+   * Soft-deletes a reservation by setting its status to 'canceled'.
+   *
+   * @async
+   * @param {number} id - The ID of the reservation to cancel.
+   * @param {Object} customer - The authenticated customer object.
+   * @returns {Promise<Object>} The updated reservation DTO.
+   * @throws {NotFoundError} If the reservation is not found.
+   * @throws {ForbiddenError} If the reservation belongs to another customer.
+   * @throws {ValidationError} If the reservation is not active.
+   */
   async cancelReservation(id, customer) {
     const reservation = await reservationRepository.findById(id);
     if (!reservation) {
@@ -202,24 +213,36 @@ module.exports = {
       throw new ForbiddenError("Cannot cancel another customer's reservation");
     }
 
-    if (reservation.status !== "active") {
+    if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
       throw new ValidationError("Only active reservations can be canceled");
     }
 
     // Instead of hard-delete change status to "canceled".
     const updated = await reservationRepository.update(id, {
-      status: "canceled",
+      status: RESERVATION_STATUS.CANCELED,
     });
 
     return reservationDTO.reservationOutputDTO(updated);
   },
 
+  /**
+   * Resolves a reservation (marks as completed or no-show).
+   *
+   * @async
+   * @param {number} id - The ID of the reservation to resolve.
+   * @param {string} status - The new status (completed or no_show).
+   * @param {Object} user - The authenticated owner user object.
+   * @returns {Promise<Object>} The updated reservation DTO.
+   * @throws {ValidationError} If the user is not an owner, status is invalid, or owner has no restaurant.
+   * @throws {NotFoundError} If the reservation is not found.
+   * @throws {ForbiddenError} If the reservation belongs to another restaurant.
+   */
   async resolveReservation(id, status, user) {
     if (user.role !== "owner") {
       throw new ValidationError("Only owners can mark a reservation as completed or no-show");
     }
 
-    if (!["completed", "no-show"].includes(status)) {
+    if (![RESERVATION_STATUS.COMPLETED, RESERVATION_STATUS.NO_SHOW].includes(status)) {
       throw new ValidationError("Invalid status update");
     }
 
@@ -236,7 +259,7 @@ module.exports = {
       );
     }
 
-    if (reservation.status !== "active") {
+    if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
       throw new ValidationError("Only active reservations can be resolved");
     }
 
@@ -248,6 +271,15 @@ module.exports = {
     return reservationDTO.reservationOutputDTO(updated);
   },
 
+  /**
+   * Lists all reservations for a restaurant owner.
+   *
+   * @async
+   * @param {Object} user - The authenticated owner user object.
+   * @returns {Promise<Array<Object>>} A list of reservation DTOs.
+   * @throws {ForbiddenError} If the user is not an owner.
+   * @throws {ValidationError} If the owner has no assigned restaurant.
+   */
   async listOwnerReservations(user) {
     if (user.role === "customer") {
       throw new ForbiddenError("Only owners can view active reservations");
@@ -268,6 +300,13 @@ module.exports = {
     return reservations.map(reservationDTO.reservationOutputDTO); // A more consice way of omitting parameter.
   },
 
+  /**
+   * Lists all reservations for a customer.
+   * @async
+   * @param {Object} customer - The authenticated customer user object.
+   * @returns {Promise<Array<Object>>} A list of reservation DTOs.
+   * @throws {ForbiddenError} If the user is not a customer.
+   */
   async listCustomerReservations(customer) {
     if (customer.role !== "customer") {
       throw new ForbiddenError("Only customers can view their reservations");

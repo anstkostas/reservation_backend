@@ -2,6 +2,7 @@ const { authDTO } = require("../dtos");
 const { authService } = require("../services");
 const { sendResponse } = require("../utils");
 const { COOKIE_CONFIG } = require("../config/env.js");
+const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../constants");
 
 module.exports = {
   async login(req, res, next) {
@@ -14,12 +15,15 @@ module.exports = {
         sameSite: COOKIE_CONFIG.SAME_SITE,
         maxAge: COOKIE_CONFIG.MAX_AGE,
       });
-      sendResponse(res, user, 200, "Logged in successfully");
+      sendResponse(res, user, HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.LOGIN_SUCCESS);
     } catch (err) {
       next(err);
     }
   },
 
+  /**
+   * Logs out a user by clearing the authentication cookie.
+   */
   async logout(req, res, next) {
     try {
       res.clearCookie(COOKIE_CONFIG.NAME, {
@@ -28,7 +32,7 @@ module.exports = {
         sameSite: COOKIE_CONFIG.SAME_SITE,
       });
 
-      sendResponse(res, null, 200, "Logged out successfully");
+      sendResponse(res, null, HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.LOGOUT_SUCCESS);
     } catch (err) {
       next(err);
     }
@@ -44,7 +48,7 @@ module.exports = {
         sameSite: COOKIE_CONFIG.SAME_SITE,
         maxAge: COOKIE_CONFIG.MAX_AGE,
       });
-      sendResponse(res, user, 201, "User created and logged in");
+      sendResponse(res, user, HTTP_STATUS.CREATED, RESPONSE_MESSAGES.AUTH.SIGNUP_SUCCESS);
     } catch (err) {
       next(err);
     }
@@ -53,7 +57,7 @@ module.exports = {
   async getCurrentUser(req, res, next) {
     try {
       // req.user is populated by valid JWT in requireAuth middleware
-      sendResponse(res, req.user, 200, "Current user info");
+      sendResponse(res, req.user, HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.USER_RETRIEVED);
     } catch (err) {
       next(err);
     }
