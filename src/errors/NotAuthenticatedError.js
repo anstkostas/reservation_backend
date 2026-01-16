@@ -1,8 +1,10 @@
+const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../constants");
+
 class NotAuthenticatedError extends Error {
-  constructor(message = "Authentication required") {
+  constructor(message = RESPONSE_MESSAGES.AUTH.NOT_AUTHENTICATED) {
     super(message);
     this.name = "NotAuthenticatedError";
-    this.statusCode = 401;
+    this.statusCode = HTTP_STATUS.NOT_AUTHENTICATED;
   }
 }
 

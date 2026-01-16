@@ -1,8 +1,10 @@
+const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../constants");
+
 class NotFoundError extends Error {
-  constructor(message) {
+  constructor(message = RESPONSE_MESSAGES.NOT_FOUND) {
     super(message);
     this.name = "NotFoundError";
-    this.status = 404;
+    this.statusCode = HTTP_STATUS.NOT_FOUND;
   }
 }
 

@@ -1,8 +1,10 @@
+const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../constants");
+
 class ValidationError extends Error {
-  constructor(message, details = []) {
+  constructor(message = RESPONSE_MESSAGES.BAD_REQUEST, details = []) {
     super(message);
     this.name = "ValidationError";
-    this.statusCode = 400;
+    this.statusCode = HTTP_STATUS.BAD_REQUEST;
     this.details = details;
   }
 
