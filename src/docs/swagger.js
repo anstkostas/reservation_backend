@@ -249,7 +249,7 @@ const swaggerSpec = swaggerJSDoc({
     },
     security: [
       {
-        bearerAuth: [],
+        cookieAuth: [],
       },
     ],
   },
