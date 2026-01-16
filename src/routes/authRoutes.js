@@ -24,17 +24,7 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 example: user@email.com
- *               password:
- *                 type: string
- *                 example: Password123#
+ *             $ref: '#/components/schemas/LoginInput'
  *     responses:
  *       200:
  *         description: Login successful
@@ -92,31 +82,7 @@ router.post("/logout", requireAuth, authController.logout);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - firstname
- *               - lastname
- *               - email
- *               - password
- *             properties:
- *               firstname:
- *                 type: string
- *                 example: John
- *               lastname:
- *                 type: string
- *                 example: Doe
- *               email:
- *                 type: string
- *                 format: email
- *                 example: john@example.com
- *               password:
- *                 type: string
- *                 format: password
- *                 example: Password123#
- *               role:
- *                 type: string
- *                 enum: [customer, owner]
- *                 example: customer
+ *             $ref: '#/components/schemas/SignupInput'
  *     responses:
  *       201:
  *         description: User created and logged in
