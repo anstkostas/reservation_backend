@@ -1,4 +1,30 @@
-# RESERVATION SERVICE
+# Reservation App - Backend Service
+
+A robust, secure REST API service built with **Express.js** and **SQL Server**. It powers the reservation platform by handling authentication, reservations, restaurant management, and user profiles.
+
+## Tech Stack
+*   **Core**: [Node.js](https://nodejs.org/) + [Express.js](https://expressjs.com/)
+*   **Database**: [MSSQL](https://www.npmjs.com/package/mssql)
+*   **ORM**: [Sequelize](https://sequelize.org/) + [Tedious](https://www.npmjs.com/package/tedious) (Driver)
+*   **Authentication**: [JWT](https://www.npmjs.com/package/jsonwebtoken) + HttpOnly Cookies
+*   **Security**: [Bcryptjs](https://www.npmjs.com/package/bcryptjs) (Hashing) + [Cors](https://www.npmjs.com/package/cors)
+*   **Validation**: [Joi](https://joi.dev/)
+*   **Utilities**: [Dotenv](https://www.npmjs.com/package/dotenv) + [UUID](https://www.npmjs.com/package/uuid)
+*   **Documentation**: [Swagger](https://swagger.io/) + [Swagger UI](https://swagger.io/swagger-ui/)
+*   **Development Environment**:
+    *   **IDE**: [VS Code](https://code.visualstudio.com/) + [Antigravity](https://antigravity.google/)
+    *   **AI Assistants**: [Gemini 3 Pro](https://gemini.google.com/), [GitHub Copilot](https://github.com/features/copilot), [ChatGPT 5](https://chatgpt.com/)
+
+
+## Architecture
+The application follows the **MVC (Model-View-Controller)** pattern with a Service layer:
+
+1.  **Routes** (`src/routes`): Defines endpoints and applies middleware (Auth, Validation).
+2.  **Controllers** (`src/controllers`): Handles HTTP Request/Response, parses input, and calls Services.
+3.  **Services** (`src/services`): Contains **Business Logic**. Handles transactions, complex validations (e.g., "Is table available?"), and repository calls.
+4.  **Repositories** (Implicit in Sequelize Models): Direct database interaction via Sequelize models acting as Data Access Objects (DAOs).
+
+---
 
 ## SQL Server Connection (Sequelize)
 
@@ -6,66 +32,84 @@ This project connects to a **Microsoft SQL Server** database using **Sequelize**
 
 ### How to Connect
 
-1. **SQL Server Authentication**  
-   Connect using your SQL Server login and password. Ensure the **Trust Server Certificate** option is enabled.
+1.  **SQL Server Authentication**  
+    Connect using your SQL Server login and password. Ensure the **Trust Server Certificate** option is enabled.
 
-2. **Enable Mixed Mode (if necessary)**  
-   If your SQL Server only allows Windows Authentication, enable Mixed Authentication:
+2.  **Enable Mixed Mode (if necessary)**  
+    If your SQL Server only allows Windows Authentication, enable Mixed Authentication:
+    *   Connect with **Windows Authentication**.
+    *   In **Object Explorer**, right-click your SQL Server instance → **Properties**.
+    *   Select **Security** → enable **SQL Server and Windows Authentication mode**.
+    *   Right-click your SQL Server instance again → **Restart**.
 
-   - Connect with **Windows Authentication**.
-   - In **Object Explorer**, right-click your SQL Server instance → **Properties**.
-   - Select **Security** → enable **SQL Server and Windows Authentication mode**.
-   - Right-click your SQL Server instance again → **Restart**.
+3.  **Create a Database**  
+    Create the database that your Sequelize instance will connect to (e.g., `RESERVATION`).
 
-3. **Create a Database**  
-   Create the database that your Sequelize instance will connect to.
-
-4. **Map User to Database**
-   - In **Object Explorer**, expand **Security → Logins**.
-   - Select your user/login, then go to **User Mapping**.
-   - Select the database you just created.
-   - Ensure **db_owner** is checked to grant full read/write/delete access.
-
----
-
-## Environment Variables
-
-Create a `.env` file with the following values:
-
-| Variable      | Description                                                 |
-| ------------- | ----------------------------------------------------------- |
-| `DB_HOST`     | SQL Server host                                             |
-| `DB_PORT`     | TCP port for default instance (ignored for named instances) |
-| `DB_INSTANCE` | Named instance (optional; leave empty for default)          |
-| `DB_NAME`     | Database name                                               |
-| `DB_USER`     | SQL Server Authentication username                          |
-| `DB_PASSWORD` | SQL Server Authentication password                          |
+4.  **Map User to Database**
+    *   In **Object Explorer**, expand **Security → Logins**.
+    *   Select your user/login, then go to **User Mapping**.
+    *   Select the database you just created.
+    *   Ensure **db_owner** is checked to grant full read/write/delete access.
 
 ---
 
-> **Note:** Sequelize will create tables based on your models using `sequelize.sync()`, but the database itself must exist beforehand. Use **SQL Authentication** for portability across developers and environments.
+## Environment Variables AND Configuration
+
+Create a `.env.development` file in the root directory:
+
+```env
+# Server
+PORT=
+
+# Database Connection
+DB_PORT=
+DB_INSTANCE=
+DB_HOST=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+
+# Authentication
+JWT_SECRET=
+JWT_EXPIRES_IN=
+COOKIE_NAME=
+COOKIE_MAX_AGE=
+```
+
+> **Note**: Sequelize syncs models using `sequelize.sync()`, but the database itself must exist beforehand.
+
+---
 
 ## Migrations & Seed Data
 
-Run `npx sequelize-cli db:migrate` to execute all migration files located in `/migrations` directory.
-With `npx sequelize-cli db:migrate:undo:all` sequelize reverts all migration files. To execute a specific file run `npx sequelize-cli --to db:migrate <name-of-directory>`, add `:undo` for the oposite cmd.
-Run `npx sequelize-cli db:seed:all` to executal all seed files located in `/seeders` directory.
-With `npx sequelize-cli db:seed:undo:all` sequelize reverts all seed files. To execute a specific file run `npx sequelize-cli db:seed --seed <seed-filename.js>`.
-For more information visit the [official site](https://sequelize.org/docs/v6/other-topics/migrations/).
+This project uses **Sequelize CLI** to manage the database schema.
 
-## require project directories
+1.  **Migrations**: Found in `/src/database/migrations`.
+    *   **Run All**: `npx sequelize-cli db:migrate`
+    *   **Undo All**: `npx sequelize-cli db:migrate:undo:all`
+    *   **Undo Last**: `npx sequelize-cli db:migrate:undo`
 
-Implemented an index.js policy. Centralized sub-directory's imports/exports in an index.js. To import specific file from that directory add only the path directory of the whole file, since node.js automaticaly looks for index.js.
-NOTE Don't add file with same name as the folder since only that will be imported.
+2.  **Seeders**: Found in `/src/database/seeders`.
+    *   **Run All**: `npx sequelize-cli db:seed:all` (Populates demo users, restaurants, and reservations)
+    *   **Undo All**: `npx sequelize-cli db:seed:undo:all`
 
-## Repositories
+For more information visit the [official Sequelize Migrations docs](https://sequelize.org/docs/v6/other-topics/migrations/).
 
-1. Encapsulate all **database access** using Sequelize models. Serve as Data Access Objects(DAOs).
-2. Implement **CRUD operations** for `User`, `Restaurant`, and `Reservation`.
-3. Designed as **objects** with explicit methods: `create`, `update`, `findBy<field>`, `findAll`, `delete`, `count<byFK>`.
+---
+
+## Project Structure & Patterns
+
+### Directory Structure implementation
+Implemented an **index.js policy**. Sub-directories (like `models`, `routes`) identify their exports in an `index.js`.
+*   **Usage**: To import modules from a directory, requiring the directory path is sufficient as Node.js automatically looks for `index.js`.
+*   **Note**: Do not name a file the same as its parent folder to avoid import confusion.
+
+### Repositories (Data Access Layer)
+*   Encapsulate all **database access** using Sequelize models.
+*   Implement **CRUD operations** for `User`, `Restaurant`, and `Reservation`.
+*   Designed as **objects** with explicit methods: `create`, `update`, `findByPk`, `findAll`, `destroy`.
 
 **Example: userRepository**
-
 ```js
 module.exports = {
   async create(userData) {
@@ -73,76 +117,168 @@ module.exports = {
   },
   async findById(id) {
     return User.findByPk(id);
-  },
+  }
 };
 ```
 
-## Data Transfer Objects(DTOs)
+### Data Transfer Objects (DTOs)
+Purpose: To sanitize, normalize, and shape data going in and out of the system.
 
-Their purpose is to sanitize, normalize, and shape data going in and out of the system.
+*   **Input DTOs**: Clean incoming data (trim, lowercase emails, set defaults). Separate DTOs exist for Create vs Update (e.g., Update allows optional fields).
+*   **Output DTOs**: Return only safe fields (excluding passwords).
 
-#### Input DTOs:
-
-Clean incoming data (trim(), lowercase emails, defaults like status = "active"). Separate Create and Update DTOs for required vs optional fields.
-
-#### Output DTOs:
-
-Return only safe and necessary fields (exclude sensitive data like passwords).
-
-#### Example: UserOutputDTO
-
+**Example: UserOutputDTO**
 ```js
-const UserOutputDTO = ({ id, email, firstname, lastname, role }) => ({
-  id,
-  email,
-  firstname,
-  lastname,
-  role,
+const UserOutputDTO = (user) => ({
+  id, email, firstname, lastname, role
 });
 ```
 
-## Validation Schemas (Joi)
+### Validation (Joi)
+Joi schemas validate request data before it reaches the Service layer.
+*   **Strict Mode**: Used for Creation (all required fields must be present).
+*   **Password Rules**: Enforces 8+ chars, uppercase, lowercase, number, special char.
 
-Used Joi to validate request data before passing to services.
+---
 
-Separate Create and Update schemas:
+## Service Layer with Business Logic
 
-Create: strict, required fields
+### 🔐 Auth Service (`authService.js`)
+Handles user authentication and JWT generation.
+*   **Login**:
+    *   **Guards**: Validates email existence and password match (Bcrypt).
+    *   **Output**: Returns `UserOutputDTO` + `accessToken`.
+*   **Signup** (Delegates to UserService):
+    *   **Output**: Returns `UserOutputDTO` + `accessToken`.
 
-Update: optional fields, validate type if present
+### 👤 User Service (`userService.js`)
+Manages user creation and restaurant claiming.
+*   **Create User (Transactional)**:
+    *   **Guards**:
+        *   Checks email uniqueness.
+        *   **Role Logic**: If `restaurantId` is provided, role maps to `owner`; otherwise `customer`.
+        *   **Owner Guard**: If role is `owner`, ensures `restaurantId` is present and restaurant is currently **unowned**.
+    *   **Side Effect**: Assigns the user as the owner of the selected restaurant.
+*   **List Unowned**: Filters all restaurants to find those with `ownerId: null`.
 
-Enforce field formats, lengths etc.
+### 🏪 Restaurant Service (`restaurantService.js`)
+Read-only access to restaurant data (Create/Update handled via seeders or manual DB access for now).
+*   **Get All / Get By ID**: Returns sanitised `RestaurantOutputDTO` (excludes internal fields if any).
+*   **Guards**: Throws `NotFoundError` if ID doesn't exist.
 
-Password strength (8+ chars, uppercase, lowercase, number, special char)
+### 📅 Reservation Service (`reservationService.js`)
+The core transactional engine of the application.
 
-## Service Layer
+#### 1. Create Reservation (`createReservation`)
+*   **Transactional**: Yes.
+*   **Guards**:
+    *   **Role**: Only `customer` role can create.
+    *   **Date/Time**: Must be future-dated (up to 2 months).
+    *   **Overbooking**: Checks `countActiveBySlot` vs `restaurant.capacity`. Atomically locks the restaurant row to prevent race conditions during high load.
+*   **Defaults**: Status set to `active`.
 
-Adds business logic.
-For user model
+#### 2. Update Reservation (`updateReservation`)
+*   **Transactional**: Yes (if date/time modifications).
+*   **Guards**:
+    *   **Ownership**: Users can only modify *their own* reservations.
+    *   **State**: Only `active` reservations can be modified (completed/canceled are immutable).
+    *   **Immutability**: Cannot change `customerId` or `restaurantId`.
+    *   **Re-Validation**: If moving to a new slot, re-runs Overbooking check excluding the current reservation.
 
-#### 🏪 Restaurant Service
+#### 3. Cancel Reservation (`cancelReservation`)
+*   **Guards**:
+    *   Only `active` status can be canceled.
+    *   Only the `customer` who made it can cancel.
+*   **Logic**: Soft-delete (updates status to `canceled`).
 
-- Enforce ownership (restaurant belongs to an owner)
-- - `ownerId` is injected by service (from auth context)
-- Restaurant ownership cannot be reassigned via update
-- Only owner can modify or delete their restaurant
-- `ownerId` immutable after creation
+#### 4. Resolve Reservation (`resolveReservation`)
+*   **Role**: **Owner Only**.
+*   **Guards**:
+    *   Owner must own the restaurant associated with the reservation.
+    *   Status transition must be to `completed` or `no-show`.
+    *   Target reservation must be `active`.
 
-#### 📅 ReservationService
+## Database Models
 
-- Implement soft delete
-- Reservation data must be from today up to two months from now.
-- persons must not be zero
-- Guard from overbooking
-- Status default to `active`
-- Only reservation owner can update
-- Only `active` reservations can be modified
-- No updates to past reservations
-- Immutable fields are protected:
-  - `customerId`
-  - `restaurantId`
+### 1. User (`Users`)
+Represents a platform user, either a customer looking for food or an owner managing a restaurant.
+*   **Fields**:
+    *   `id` (UUID, Primary Key)
+    *   `firstname` (String, Required)
+    *   `lastname` (String, Required)
+    *   `email` (String, Unique, Required) - Login identifier.
+    *   `password` (String, Required) - Bcrypt hashed.
+    *   `role` (Enum: `customer` | `owner`, Required)
+*   **Associations**:
+    *   `hasOne` **Restaurant** (as `restaurants`, foreignKey: `ownerId`)
+    *   `hasMany` **Reservation** (as `reservations`, foreignKey: `customerId`)
 
-##### Reservation Lifecycle
+### 2. Restaurant (`Restaurants`)
+Represents a dining venue. One-to-one relationship with an Owner.
+*   **Fields**:
+    *   `id` (UUID, Primary Key)
+    *   `name` (String, Required)
+    *   `description` (Text)
+    *   `address` (String, Required)
+    *   `phone` (String, Required)
+    *   `capacity` (Integer, Required) - Maximum tables.
+    *   `logoUrl` (String) - URL to logo image.
+    *   `coverImageUrl` (String) - URL to cover image.
+    *   `ownerId` (UUID, Unique) - Links to User.
+*   **Associations**:
+    *   `belongsTo` **User** (as `owner`, foreignKey: `ownerId`)
+    *   `hasMany` **Reservation** (as `reservations`, foreignKey: `restaurantId`)
 
-- `active` → `canceled`
-- `active` → `completed`
+### 3. Reservation (`Reservations`)
+A booking made by a customer at a restaurant.
+*   **Fields**:
+    *   `id` (UUID, Primary Key)
+    *   `date` (DateOnly, Required) - YYYY-MM-DD.
+    *   `time` (Time, Required) - HH:MM:SS.
+    *   `persons` (Integer, Default: 1) - Number of people.
+    *   `status` (Enum: `active` | `canceled` | `completed` | `no-show`, Default: `active`)
+    *   `restaurantId` (UUID, Required)
+    *   `customerId` (UUID, Required)
+*   **Associations**:
+    *   `belongsTo` **Restaurant** (as `restaurant`, foreignKey: `restaurantId`)
+    *   `belongsTo` **User** (as `customer`, foreignKey: `customerId`)
+
+---
+
+## API Routes Overview
+
+### Auth (`/api/auth`)
+*   `POST /signup`: Register as Customer or Owner (sets HttpOnly cookie).
+*   `POST /login`: Authenticates user and sets **HttpOnly Cookie**.
+*   `POST /logout`: Clears the cookie.
+*   `GET /me`: Returns the currently authenticated user context.
+
+### Reservations (`/api/reservations`)
+*   `GET /my-reservations`: List currently logged-in customer's reservations.
+*   `POST /restaurants/:restaurantId`: Create a new booking (Transactional).
+*   `PUT /:id`: Update reservation (Customer only).
+*   `DELETE /:id`: Cancel a reservation (Customer only).
+*   `GET /owner-reservations`: (Owner Only) List all bookings for their venue.
+*   `POST /:id/resolve`: (Owner Only) Mark reservation as 'completed' or 'no-show'.
+
+### Restaurants (`/api/restaurants`)
+*   `GET /`: Public list of all restaurants.
+*   `GET /:id`: Public details of a specific restaurant.
+
+---
+
+## Error Handling
+The backend uses a centralized error handler (`globalErrorHandler.js` / middleware).
+*   **Response Format**: `{ success: false, message: "Error...", data: null }`
+*   **Operational Errors**: (e.g., "Table not available") return specific 400/404 messages.
+*   **System Errors**: Returns generic 500 error (Stack trace included in development).
+
+## Running the Server
+```bash
+# Install dependencies
+npm install
+
+# Run (Development with Nodemon)
+npm run dev
+# Server default: http://localhost:22000
+```
