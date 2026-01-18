@@ -2,6 +2,23 @@
 
 A robust, secure REST API service built with **Express.js** and **SQL Server**. It powers the reservation platform by handling authentication, reservations, restaurant management, and user profiles.
 
+> **TIP**  
+> Want to get up and running quickly? Jump to the [Quick connect](#quick-connect) section at the end of this document.
+
+## Table of Contents
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [SQL Server Connection (Sequelize)](#sql-server-connection-sequelize)
+- [Environment Variables AND Configuration](#environment-variables-and-configuration)
+- [Migrations & Seed Data](#migrations--seed-data)
+- [Project Structure & Patterns](#project-structure--patterns)
+- [Service Layer with Business Logic](#service-layer-with-business-logic)
+- [Database Models](#database-models)
+- [API Routes Overview](#api-routes-overview)
+- [Error Handling](#error-handling)
+- [Running the Server](#running-the-server)
+- [Quick connect](#quick-connect)
+
 ## Tech Stack
 *   **Core**: [Node.js](https://nodejs.org/) + [Express.js](https://expressjs.com/)
 *   **Database**: [MSSQL](https://www.npmjs.com/package/mssql)
@@ -282,3 +299,12 @@ npm install
 npm run dev
 # Server default: http://localhost:22000
 ```
+
+## Quick connect
+1. `npm install` for both frontend and backend.
+2. Create the database assigning a user to it.
+3. Open `src/config/env.js` to see which env variables dont have defaults
+4. Fill `.env` files on both frontend and backend.
+5. Run `npx sequelize-cli db:migrate` & then `npx sequelize-cli db:seed:all` to get all tables with sample data.
+6. Run `npm run dev` for both backend and frontend to start the servers.
+7. Personal note: I open 4 different terminals(with appropriate names/colors) 2 for the servers and another 2 for executing commands each pointing to frontend and backend folders.
