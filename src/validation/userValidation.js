@@ -12,6 +12,7 @@ const createUserSchema = Joi.object({
   firstname: Joi.string().min(4).max(50).required(),
   lastname: Joi.string().min(4).max(50).required(),
   role: Joi.string().valid("owner", "customer").required(),
+  restaurantId: Joi.string().uuid().allow(null, ""),
 });
 
 module.exports = {

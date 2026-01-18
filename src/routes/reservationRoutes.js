@@ -1,6 +1,7 @@
 const express = require("express");
 const { reservationController } = require("../controllers");
-const { requireAuth, requireRole } = require("../middlewares");
+const { requireAuth, requireRole, validate } = require("../middlewares");
+const { reservationValidation } = require("../validation");
 
 const router = express.Router();
 
@@ -75,6 +76,7 @@ router.post(
   "/restaurants/:restaurantId",
   requireAuth,
   requireRole("customer"),
+  validate(reservationValidation.createReservationSchema),
   reservationController.createReservation
 );
 
@@ -195,6 +197,7 @@ router.put(
   "/:id",
   requireAuth,
   requireRole("customer"),
+  validate(reservationValidation.updateReservationSchema),
   reservationController.updateReservation
 );
 
@@ -268,10 +271,10 @@ router.delete(
 
 /**
  * @swagger
- * /reservations/{id}/complete:
+ * /reservations/{id}/resolve:
  *   post:
- *     summary: Mark a reservation as completed
- *     description: Allows an owner to mark an active reservation as "completed". Only the owner of the restaurant associated with the reservation can perform this action. Only active reservations can be completed.
+ *     summary: Mark a reservation as completed or no-show
+ *     description: Allows an owner to mark an active reservation as "completed" or "no-show". Only the owner of the restaurant associated with the reservation can perform this action. Only active reservations can be resolved.
  *     tags:
  *       - Reservations
  *     security:
@@ -283,10 +286,10 @@ router.delete(
  *         schema:
  *           type: string
  *           format: uuid
- *         description: UUID of the reservation to complete
+ *         description: UUID of the reservation to resolve
  *     responses:
  *       200:
- *         description: Reservation completed successfully
+ *         description: Reservation resolved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -297,7 +300,7 @@ router.delete(
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Reservation completed successfully
+ *                   example: Reservation resolved successfully
  *                 data:
  *                   $ref: '#/components/schemas/Reservation'
  *       400:
@@ -329,6 +332,7 @@ router.post(
   "/:id/resolve",
   requireAuth,
   requireRole("owner"),
+  validate(reservationValidation.reservationStatusSchema),
   reservationController.resolveReservation
 );
 

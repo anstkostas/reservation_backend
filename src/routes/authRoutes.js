@@ -6,8 +6,8 @@
  */
 const express = require("express");
 const { authController } = require("../controllers");
-const { requireAuth } = require("../middlewares");
-const { sendResponse } = require("../utils");
+const { requireAuth, validate } = require("../middlewares");
+const { userValidation } = require("../validation");
 
 const router = express.Router();
 
@@ -97,7 +97,7 @@ router.post("/logout", requireAuth, authController.logout);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/signup", authController.signup);
+router.post("/signup", validate(userValidation.createUserSchema), authController.signup);
 
 /**
  * @swagger
