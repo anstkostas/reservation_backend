@@ -6,8 +6,7 @@ const SERVER = {
   PORT: Number(process.env.PORT) || 22000,
 }
 
-const FRONTEND_SERVER =
-  ENV === "development" ? "http://localhost:22001" : process.env.FRONTEND_URL;
+const FRONTEND_SERVER = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
 const DB_CONFIG = {
   ENV: ENV,
