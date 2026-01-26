@@ -14,7 +14,7 @@ if (DB_CONFIG.URL) {
         rejectUnauthorized: false
       } : false
     },
-    logging: false,
+    logging: console.log,
   });
 } else {
   // Use individual credentials (local development)
