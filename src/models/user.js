@@ -38,7 +38,6 @@ module.exports = (sequelize, dataTypes) => {
     },
     {
       tableName: "Users",
-      schema: "dbo",
       timestamps: false,
     }
   );

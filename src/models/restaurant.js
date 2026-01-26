@@ -51,7 +51,6 @@ module.exports = (sequelize, dataTypes) => {
     },
     {
       tableName: "Restaurants",
-      schema: "dbo",
       timestamps: false,
     }
   );

@@ -8,13 +8,13 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     // Get customer users
     const customers = await queryInterface.sequelize.query(
-      `SELECT id FROM Users WHERE role = 'customer'`,
+      `SELECT id FROM "Users" WHERE role = 'customer'`,
       { type: Sequelize.QueryTypes.SELECT }
     );
 
     // Get restaurants
     const restaurants = await queryInterface.sequelize.query(
-      `SELECT id FROM Restaurants`,
+      `SELECT id FROM "Restaurants"`,
       { type: Sequelize.QueryTypes.SELECT }
     );
 

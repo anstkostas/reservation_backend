@@ -4,10 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(
-      {
-        tableName: "Reservations",
-        schema: "dbo",
-      },
+      "Reservations",
       {
         id: {
           type: Sequelize.UUID,
@@ -36,10 +33,7 @@ module.exports = {
           type: Sequelize.UUID,
           allowNull: false,
           references: {
-            model: {
-              tableName: "Restaurants",
-              schema: "dbo",
-            },
+            model: "Restaurants",
             key: "id",
           },
           onUpdate: "CASCADE", // This fk follows the parent model id.
@@ -49,10 +43,7 @@ module.exports = {
           type: Sequelize.UUID,
           allowNull: false,
           references: {
-            model: {
-              tableName: "Users",
-              schema: "dbo",
-            },
+            model: "Users",
             key: "id",
           },
           onUpdate: "CASCADE",

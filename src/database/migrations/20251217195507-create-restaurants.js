@@ -4,10 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(
-      {
-        tableName: "Restaurants",
-        schema: "dbo",
-      },
+      "Restaurants",
       {
         id: {
           type: Sequelize.UUID,
@@ -54,10 +51,7 @@ module.exports = {
           type: Sequelize.UUID,
           allowNull: true,
           references: {
-            model: {
-              tableName: "Users",
-              schema: "dbo",
-            },
+            model: "Users",
             key: "id",
           },
           onUpdate: "CASCADE",

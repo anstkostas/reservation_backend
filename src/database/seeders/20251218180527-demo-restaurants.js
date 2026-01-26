@@ -6,7 +6,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     // Get owner users (role = owner)
     const owners = await queryInterface.sequelize.query(
-      `SELECT id FROM Users WHERE role = 'owner'`,
+      `SELECT id FROM "Users" WHERE role = 'owner'`,
       { type: Sequelize.QueryTypes.SELECT }
     );
     await queryInterface.bulkInsert("Restaurants", [
