@@ -4,11 +4,11 @@ const { DB_CONFIG } = require("./env.js");
 if (DB_CONFIG.URL) {
   module.exports = {
     development: {
-      use_env_variable: "DATABASE_URL",
+      use_env_variable: "DB_URL",
       dialect: "postgres",
     },
     production: {
-      use_env_variable: "DATABASE_URL",
+      use_env_variable: "DB_URL",
       dialect: "postgres",
       dialectOptions: {
         ssl: {
