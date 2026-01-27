@@ -27,22 +27,22 @@ For the `postgresql` branch, use a `.env.development` file with these settings:
 
 ```env
 # Server
-PORT=22000
-HOST=localhost
-FRONTEND_URL=http://localhost:5173
+PORT=
+HOST=
+FRONTEND_URL=
 
 # PostgreSQL Configuration
 DB_PORT=5432
-DB_HOST=localhost
-DB_NAME=cf8-reservation
-DB_USER=postgres
-DB_PASSWORD=your_password
+DB_HOST=
+DB_NAME=<db-name>
+DB_USER=<postgres(is the default/master username)>
+DB_PASSWORD=<your_password>
 
 # Authentication
 JWT_SECRET=your_secret_key
 JWT_EXPIRES_IN=2h
-COOKIE_NAME=accessToken
-COOKIE_MAX_AGE=7200000
+COOKIE_NAME=
+COOKIE_MAX_AGE=
 ```
 
 ---
@@ -64,8 +64,7 @@ COOKIE_MAX_AGE=7200000
 This project is configured for deployment on **Render**.
 
 ### 1. Database (PostgreSQL)
-*   Create a new **PostgreSQL** database on Render (Free tier works great).
-*   **Region**: Choose closest to you (e.g., Frankfurt).
+*   Create a new **PostgreSQL** database on Render.
 *   **Note**: Copy the **Internal Database URL** after creation.
 
 ### 2. Backend Service
@@ -73,22 +72,22 @@ This project is configured for deployment on **Render**.
 *   **Branch**: Select `postgresql` branch.
 *   **Runtime**: Node
 *   **Build Command**: `npm install`
-*   **Start Command**: `npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm start`
-    *   *Note: This automatically runs migrations/seeders on every deploy.*
+*   **Start Command**: `npx sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm start`
+    *   *Note: This runs migrations(down, up)/seeders on every deploy.*
 *   **Environment Variables**:
     *   `NODE_ENV`: `production`
     *   `DATABASE_URL`: (Paste your Internal Database URL here)
-    *   `JWT_SECRET`: (Generate a secure random string)
+    *   `JWT_SECRET`:
     *   `JWT_EXPIRES_IN`: `2h`
     *   `COOKIE_NAME`: `accessToken`
-    *   `FRONTEND_URL`: (URL of your deployed frontend, e.g., `https://reservation-frontend.onrender.com`)
+    *   `FRONTEND_URL`:
 
 ### 3. Frontend Service (Static Site)
 *   Create a **Static Site** on Render.
 *   **Build Command**: `npm install && npm run build`
 *   **Publish Directory**: `dist`
 *   **Environment Variables**:
-    *   `VITE_API_URL`: (URL of your deployed backend **with /api suffix**, e.g., `https://reservation-backend.onrender.com/api`)
+    *   `VITE_API_URL`:
     *    *Note: Append **/api** to the backend URL*
 
 ### 4. Connect to pgAdmin (Optional)
