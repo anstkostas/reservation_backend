@@ -1,6 +1,6 @@
 # Reservation App - Backend Service
 
-A robust, secure REST API service built with **Express.js** and **SQL Server**. It powers the reservation platform by handling authentication, reservations, restaurant management, and user profiles.
+A robust, secure REST API service built with **Express.js** and **SQL Server**. It powers the reservation platform by handling authentication, reservations, restaurant management.
 
 > **TIP**  
 > Want to get up and running quickly? Jump to the [Quick connect](#quick-connect) section at the end of this document.
