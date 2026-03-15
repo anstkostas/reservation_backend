@@ -76,14 +76,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete("Users", {
-      email: [
-        "owner1@restaurant.com",
-        "owner2@restaurant.com",
-        "owner3@restaurant.com",
-        "customer1@test.com",
-        "customer2@test.com",
-      ],
-    });
+    await queryInterface.bulkDelete("Users", null, {});
   },
 };

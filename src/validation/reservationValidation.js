@@ -16,7 +16,7 @@ const updateReservationSchema = Joi.object({
 }).min(1);
 
 const reservationStatusSchema = Joi.object({
-  status: Joi.string().valid("canceled", "completed").required(),
+  status: Joi.string().valid("completed", "no-show").required(),
 });
 
 module.exports = {
