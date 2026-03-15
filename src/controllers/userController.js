@@ -1,5 +1,6 @@
 const { userService } = require("../services");
 const { sendResponse } = require("../utils");
+const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../constants");
 
 module.exports = {
   // ❌ No create user here...
@@ -9,15 +10,11 @@ module.exports = {
    * Lists restaurants that do not have an owner.
    *
    * @async
-   * @param {Object} req - The request object.
-   * @param {Object} res - The response object.
-   * @param {Function} next - The next middleware function.
-   * @returns {Promise<void>}
    */
-  async listUnownedRestaurants(req, res, next) {
+  async listUnownedRestaurants(_req, res, next) {
     try {
       const restaurants = await userService.listUnownedRestaurants();
-      return sendResponse(res, restaurants, 200, "Unowned restaurants fetched");
+      return sendResponse(res, restaurants, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESTAURANT.LIST_RETRIEVED);
     } catch (err) {
       next(err);
     }

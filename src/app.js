@@ -5,7 +5,7 @@ const { FRONTEND_SERVER } = require("./config/env.js");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swagger");
 const { registerRoutes } = require("./routes");
-const { globalErrorHandler } = require("./utils");
+const { globalErrorHandler } = require("./middlewares");
 
 const app = express();
 

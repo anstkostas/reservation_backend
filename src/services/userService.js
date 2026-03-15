@@ -4,7 +4,6 @@ const { userRepository, restaurantRepository } = require("../repositories");
 const { userDTO, restaurantDTO } = require("../dtos");
 const { NotFoundError, ValidationError, ForbiddenError } = require("../errors");
 
-// Object Literal Pattern
 module.exports = {
   /**
    * Creates a new user and (optionally) assigns restaurant ownership.
@@ -51,7 +50,6 @@ module.exports = {
     const transaction = await sequelize.transaction();
     try {
       const user = await userRepository.create(createDTO, { transaction });
-      // Owner assignment logic
       if (createDTO.role === "owner") {
         if (!createDTO.restaurantId) {
           throw new ValidationError("Owner must select a restaurant", [
@@ -92,8 +90,7 @@ module.exports = {
    * @returns {Promise<Array>} Array of restaurant output DTOs
    */
   async listUnownedRestaurants() {
-    const allRestaurants = await restaurantRepository.findAll();
-    const unowned = allRestaurants.filter((r) => !r.ownerId);
-    return unowned.map((r) => restaurantDTO.restaurantOutputDTO(r));
+    const restaurants = await restaurantRepository.findUnowned();
+    return restaurants.map((r) => restaurantDTO.restaurantOutputDTO(r));
   },
 };

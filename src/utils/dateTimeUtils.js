@@ -44,28 +44,13 @@ module.exports = {
     }
   },
 
-  getRandomDate() {
-    const today = new Date();
-    const twoMonths = 60 * 24 * 60 * 60 * 1000;
-    const randomOffset =
-      Math.floor(Math.random() * (2 * twoMonths + 1)) - twoMonths;
-    const randomDate = new Date(today.getTime() + randomOffset);
-    const year = randomDate.getFullYear();
-    const month = String(randomDate.getMonth() + 1).padStart(2, "0");
-    const day = String(randomDate.getDate()).padStart(2, "0");
-    const newDate = `${year}-${month}-${day}`;
-    const inPast = randomDate < today;
-    return { newDate, inPast };
-  },
-
-  getRandomTime() {
-    const middle = 19;
-    const range = 4;
-    const randomOffset = Math.floor(Math.random() * (2 * range + 1)) - range;
-    const randomTime = middle + randomOffset;
-    return randomTime.toString().concat(":").padEnd(5, 0);
-  },
-
+  /**
+   * Normalizes a time value returned from the DB into HH:mm string format.
+   * PostgreSQL TIME columns can come back as a Date object or a full time string (e.g. "22:00:00.0000000").
+   *
+   * @param {Date|string} time - Raw time value from the database
+   * @returns {string} Normalized time string in HH:mm format
+   */
   normalizeDBTime(time) {
     if (time instanceof Date) {
       const hours = time.getUTCHours().toString().padStart(2, '0');

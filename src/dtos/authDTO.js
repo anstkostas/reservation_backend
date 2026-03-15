@@ -3,15 +3,17 @@ const { ValidationError } = require("../errors");
 
 module.exports = {
   /**
-   * Validates login input
-   * @param {object} data
+   * Validates and normalizes login input.
+   *
+   * @param {object} data - Raw request body
    * @returns {{email: string, password: string}}
+   * @throws {ValidationError} If email or password is missing
    */
   loginInputDTO(data) {
     if (!data.email || !data.password) {
       throw new ValidationError("Email and password are required");
     }
-    return { email: data.email, password: data.password };
+    return { email: data.email.trim().toLowerCase(), password: data.password };
   },
 
   /**
@@ -29,14 +31,16 @@ module.exports = {
   },
 
   /**
-   * Standardizes login output
-   * @param {object} user - user object from DB
-   * @returns {{user: {id: string, firstname:string, lastname:string, email: string, role: string}}}
+   * Shapes the login/signup response — combines the safe user output DTO with the signed token.
+   *
+   * @param {object} user - User object from DB
+   * @param {string} token - Signed JWT
+   * @returns {{user: {id: string, firstname: string, lastname: string, email: string, role: string}, token: string}}
    */
   loginOutputDTO(user, token) {
     return {
       user: userDTO.userOutputDTO(user),
-      token: token,
+      token,
     };
   },
 };

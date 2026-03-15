@@ -5,6 +5,12 @@ const { COOKIE_CONFIG } = require("../config/env.js");
 const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../constants");
 
 module.exports = {
+  /**
+   * Authenticates a user and sets the auth cookie on success.
+   *
+   * @async
+   * @throws {ValidationError} If credentials are missing or invalid
+   */
   async login(req, res, next) {
     try {
       const input = authDTO.loginInputDTO(req.body);
@@ -23,8 +29,10 @@ module.exports = {
 
   /**
    * Logs out a user by clearing the authentication cookie.
+   *
+   * @async
    */
-  async logout(req, res, next) {
+  async logout(_req, res, next) {
     try {
       res.clearCookie(COOKIE_CONFIG.NAME, {
         httpOnly: COOKIE_CONFIG.HTTP_ONLY,
@@ -38,6 +46,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Creates a new user account and sets the auth cookie on success.
+   *
+   * @async
+   * @throws {ValidationError} If required fields are missing or email is already in use
+   */
   async signup(req, res, next) {
     try {
       const input = authDTO.signupInputDTO(req.body);
@@ -54,9 +68,14 @@ module.exports = {
     }
   },
 
+  /**
+   * Returns the currently authenticated user from the request context.
+   * req.user is populated by the requireAuth middleware.
+   *
+   * @async
+   */
   async getCurrentUser(req, res, next) {
     try {
-      // req.user is populated by valid JWT in requireAuth middleware
       sendResponse(res, req.user, HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.USER_RETRIEVED);
     } catch (err) {
       next(err);
