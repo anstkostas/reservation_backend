@@ -2,33 +2,22 @@ const { Sequelize } = require("sequelize");
 const { ENV, DB_CONFIG } = require("./env.js");
 const config = require("./config.js");
 
-let sequelize;
-
-// Use DATABASE_URL if available (Render production)
-if (DB_CONFIG.URL) {
-  sequelize = new Sequelize(DB_CONFIG.URL, {
-    dialect: "postgres",
+const sequelize = new Sequelize(
+  config[ENV].database,
+  config[ENV].username,
+  config[ENV].password,
+  {
+    port: config[ENV].port,
+    host: config[ENV].host,
+    dialect: "mssql",
     dialectOptions: {
-      ssl: ENV === "production" ? {
-        require: true,
-        rejectUnauthorized: false
-      } : false
+      options: {
+        instanceName: DB_CONFIG.INSTANCE,
+        trustServerCertificate: true,
+      },
     },
-    logging: console.log,
-  });
-} else {
-  // Use individual credentials (local development)
-  sequelize = new Sequelize(
-    config[ENV].database,
-    config[ENV].username,
-    config[ENV].password,
-    {
-      port: config[ENV].port,
-      host: config[ENV].host,
-      dialect: "postgres",
-      logging: false,
-    }
-  );
-}
+    // logging: Add winston logger here?
+  }
+);
 
 module.exports = sequelize;

@@ -8,15 +8,13 @@ const SERVER = {
 
 const FRONTEND_SERVER = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
-// Support both DATABASE_URL (Render) and individual credentials (local)
-const DB_CONFIG = process.env.DB_URL ? {
-  URL: process.env.DB_URL,
-} : {
+const DB_CONFIG = {
   ENV: ENV,
   HOST: process.env.DB_HOST || "localhost",
-  PORT: Number(process.env.DB_PORT) || 5432,
-  NAME: process.env.DB_NAME || "reservation",
-  USER: process.env.DB_USER || "postgres",
+  PORT: Number(process.env.DB_PORT) || 1433,
+  INSTANCE: process.env.DB_INSTANCE || undefined,
+  NAME: process.env.DB_NAME || "RESERVATION",
+  USER: process.env.DB_USER,
   PASSWORD: process.env.DB_PASSWORD,
 };
 

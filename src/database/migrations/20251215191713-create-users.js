@@ -4,7 +4,10 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(
-      "Users",
+      {
+        tableName: "Users",
+        schema: "dbo",
+      },
       {
         id: {
           type: Sequelize.UUID,
@@ -43,7 +46,7 @@ module.exports = {
       }
     );
     await queryInterface.addConstraint(
-      "Users",
+      { tableName: "Users", schema: "dbo" },
       {
         fields: ["role"],
         type: "check",
@@ -55,6 +58,6 @@ module.exports = {
     );
   },
   async down(queryInterface) {
-    await queryInterface.dropTable("Users");
+    await queryInterface.dropTable({ tableName: "Users", schema: "dbo" });
   },
 };
