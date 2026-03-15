@@ -40,7 +40,7 @@ module.exports = {
     const transaction = await sequelize.transaction();
     try {
       if (customer.role !== "customer")
-        throw new ValidationError("Only customers can make reservations");
+        throw new ForbiddenError("Only customers can make reservations");
 
       if (!restaurantId) throw new ValidationError("RestaurantId required");
 
@@ -239,7 +239,7 @@ module.exports = {
    */
   async resolveReservation(id, status, user) {
     if (user.role !== "owner") {
-      throw new ValidationError("Only owners can mark a reservation as completed or no-show");
+      throw new ForbiddenError("Only owners can mark a reservation as completed or no-show");
     }
 
     if (![RESERVATION_STATUS.COMPLETED, RESERVATION_STATUS.NO_SHOW].includes(status)) {
@@ -265,7 +265,7 @@ module.exports = {
 
     // Update status
     const updated = await reservationRepository.update(id, {
-      status: status,
+      status,
     });
 
     return reservationDTO.reservationOutputDTO(updated);
@@ -294,10 +294,7 @@ module.exports = {
       // Status not filtered, returns all
     });
 
-    // return reservations.map((reservation) =>
-    //   reservationDTO.reservationOutputDTO(reservation)
-    // );
-    return reservations.map(reservationDTO.reservationOutputDTO); // A more consice way of omitting parameter.
+    return reservations.map(reservationDTO.reservationOutputDTO); // Point-free: passes the DTO function directly instead of wrapping it in an arrow function
   },
 
   /**
