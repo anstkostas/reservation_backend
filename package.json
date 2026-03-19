@@ -12,14 +12,13 @@
   },
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
-  "main": "app.js",
+  "type": "module",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "start:dev": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "start:test": "NODE_ENV=test node app.js",
-    "start:prod": "NODE_ENV=production node app.js"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "start:prod": "NODE_ENV=production node dist/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -38,7 +37,14 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "nodemon": "^3.1.11",
-    "sequelize-cli": "^6.6.3"
+    "sequelize-cli": "^6.6.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
