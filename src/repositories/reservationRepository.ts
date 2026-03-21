@@ -1,5 +1,6 @@
 import { prisma } from "../config/prismaClient.js";
 import { Prisma, type Reservation } from "../generated/prisma/client.js";
+import { PRISMA_ERROR_CODES } from "../constants/index.js";
 import type { ReservationWithRelations } from "../dtos/reservationDTO.js";
 
 // Transaction client omits connection/lifecycle methods — typed for use inside prisma.$transaction
@@ -91,7 +92,7 @@ export const reservationRepository = {
       // P2025 — record not found
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === "P2025"
+        err.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND
       ) {
         return null;
       }
@@ -114,7 +115,7 @@ export const reservationRepository = {
       // P2025 — record not found
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === "P2025"
+        err.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND
       ) {
         return null;
       }
@@ -139,45 +140,37 @@ export const reservationRepository = {
    * Counts active reservations for a specific restaurant, date, and time slot.
    * Used to check capacity before creating or updating a reservation.
    *
-   * When called within a transaction (tx provided), issues a SELECT FOR UPDATE via
-   * $queryRaw to lock the matching rows and prevent race conditions on concurrent bookings.
-   * Without a transaction, uses a standard Prisma count query.
+   * Always uses $queryRaw for reliable TIME column comparison via PostgreSQL casting.
+   * When called within a transaction (tx provided), appends FOR UPDATE to lock the
+   * matching rows and prevent race conditions on concurrent bookings.
    *
    * @param {string} restaurantId - Restaurant UUID
    * @param {Date} date - Reservation date
-   * @param {Date} time - Reservation time
+   * @param {string} time - Reservation time in HH:MM format
    * @param {TxClient} [tx] - Prisma transaction client — pass when inside a capacity-check transaction
    * @returns {Promise<number>} Count of active reservations for that slot
    */
   async countActiveBySlot(
     restaurantId: string,
     date: Date,
-    time: Date,
+    time: string,
     tx?: TxClient
   ): Promise<number> {
-    if (tx) {
-      // SELECT FOR UPDATE locks the matching rows for the duration of the transaction,
-      // preventing a second concurrent request from reading the same count before the
-      // first one commits its new reservation — the race condition that causes overbooking
-      const result = await tx.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(*)::bigint AS count
-        FROM "Reservations"
-        WHERE "restaurantId" = ${restaurantId}::uuid
-          AND date = ${date}::date
-          AND time = ${time}::time
-          AND status = 'active'::"ReservationStatus"
-        FOR UPDATE
-      `;
-      return Number(result[0].count);
-    }
-
-    return prisma.reservation.count({
-      where: {
-        restaurantId,
-        date,
-        time,
-        status: "active",
-      },
-    });
+    const client = tx ?? prisma;
+    // PostgreSQL TIME cast requires HH:MM:SS — append seconds to the HH:MM string from Zod
+    const timeWithSeconds = `${time}:00`;
+    // FOR UPDATE is appended only inside a transaction to prevent overbooking race conditions;
+    // Prisma.raw injects the clause as a literal SQL fragment (not a parameter)
+    const lockClause = tx ? Prisma.raw("FOR UPDATE") : Prisma.raw("");
+    const result = await client.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*)::bigint AS count
+      FROM "Reservations"
+      WHERE "restaurantId" = ${restaurantId}::uuid
+        AND date = ${date}::date
+        AND time = ${timeWithSeconds}::time
+        AND status = 'active'::"ReservationStatus"
+      ${lockClause}
+    `;
+    return Number(result[0].count);
   },
 };

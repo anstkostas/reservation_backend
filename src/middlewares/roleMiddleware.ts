@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { Role } from "../generated/prisma/client.js";
 import { ForbiddenError } from "../errors/index.js";
 
 /**
@@ -11,7 +12,7 @@ import { ForbiddenError } from "../errors/index.js";
  * @example
  * router.post("/path", requireAuth, requireRole("owner"), handler)
  */
-export function requireRole(requiredRole: "customer" | "owner") {
+export function requireRole(requiredRole: Role) {
   return function roleMiddleware(req: Request, _res: Response, next: NextFunction): void {
     if (!req.user || req.user.role !== requiredRole) {
       return next(

@@ -1,5 +1,6 @@
 import { prisma } from "../config/prismaClient.js";
 import { Prisma, type User, type Role } from "../generated/prisma/client.js";
+import { PRISMA_ERROR_CODES } from "../constants/index.js";
 
 // Transaction client omits connection/lifecycle methods — typed for use inside prisma.$transaction
 type TxClient = Omit<
@@ -70,7 +71,7 @@ export const userRepository = {
       // P2025 — record not found
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === "P2025"
+        err.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND
       ) {
         return null;
       }
@@ -91,7 +92,7 @@ export const userRepository = {
       // P2025 — record not found
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === "P2025"
+        err.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND
       ) {
         return null;
       }
