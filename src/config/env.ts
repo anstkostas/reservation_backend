@@ -25,7 +25,7 @@ interface DbConfigCredentials {
 type DbConfig = DbConfigUrl | DbConfigCredentials;
 
 interface AuthConfig {
-  JWT_SECRET: string | undefined;
+  JWT_SECRET: string;
   JWT_EXPIRES_IN: string;
 }
 
@@ -57,7 +57,8 @@ export const DB_CONFIG: DbConfig = process.env.DB_URL
     };
 
 export const AUTH_CONFIG: AuthConfig = {
-  JWT_SECRET: process.env.JWT_SECRET,
+  // Cast is safe — server.ts validates JWT_SECRET is present before the app starts
+  JWT_SECRET: process.env.JWT_SECRET as string,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "2h",
 };
 

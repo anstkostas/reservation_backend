@@ -2,12 +2,6 @@ import { prisma } from "../config/prismaClient.js";
 import { Prisma, type Restaurant } from "../generated/prisma/client.js";
 import { PRISMA_ERROR_CODES } from "../constants/index.js";
 
-// Transaction client omits connection/lifecycle methods — typed for use inside prisma.$transaction
-type TxClient = Omit<
-  typeof prisma,
-  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
->;
-
 export const restaurantRepository = {
   /**
    * Finds a single restaurant by primary key.
@@ -16,7 +10,7 @@ export const restaurantRepository = {
    * @param {TxClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Restaurant | null>} The restaurant, or null if not found
    */
-  async findById(id: string, tx?: TxClient): Promise<Restaurant | null> {
+  async findById(id: string, tx?: Prisma.TransactionClient): Promise<Restaurant | null> {
     const client = tx ?? prisma;
     return client.restaurant.findUnique({ where: { id } });
   },
@@ -61,7 +55,7 @@ export const restaurantRepository = {
   async assignOwner(
     id: string,
     ownerId: string,
-    tx?: TxClient
+    tx?: Prisma.TransactionClient
   ): Promise<Restaurant | null> {
     const client = tx ?? prisma;
     try {

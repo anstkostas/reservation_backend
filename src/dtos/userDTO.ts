@@ -1,11 +1,11 @@
-import type { User } from "../generated/prisma/client.js";
+import type { User, Role } from "../generated/prisma/client.js";
 
 export interface UserOutput {
   id: string;
   firstname: string;
   lastname: string;
   email: string;
-  role: string;
+  role: Role;
 }
 
 /**

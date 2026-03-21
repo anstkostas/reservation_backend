@@ -47,7 +47,7 @@ export function parseTimeString(time: string): Date {
 export function validateReservationDateTime(date: Date | string, time: string): void {
   const [h, m] = time.split(":").map(Number);
   const dt = new Date(date);
-  dt.setHours(h, m, 0, 0);
+  dt.setUTCHours(h, m, 0, 0);
   const now = new Date();
   if (dt < now) {
     throw new ValidationError("Reservation datetime cannot be in the past");
@@ -72,8 +72,6 @@ export function normalizeDBTime(time: Date | string): string {
     const minutes = time.getUTCMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
   }
-  if (typeof time === "string") {
-    return time.substring(0, 5); // (22:00):00.0000000
-  }
-  return time; // never — both branches above are exhaustive for Date | string
+  // typeof time === "string" — both branches are exhaustive for Date | string
+  return time.substring(0, 5); // (22:00):00.0000000
 }

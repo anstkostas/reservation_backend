@@ -1,5 +1,9 @@
 import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
 
+/**
+ * Thrown when a request arrives without valid authentication credentials.
+ * Maps to HTTP 401 Unauthorized.
+ */
 export class NotAuthenticatedError extends Error {
   statusCode: number;
 

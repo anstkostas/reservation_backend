@@ -1,14 +1,24 @@
-// Usage: validate(schema, property)
-// property -> "body" (default), "params", "query"
-// router.post("/", validate(createUserSchema), userController.createUser);
 import { z } from "zod";
-import { Request, Response, NextFunction } from "express";
+import { type RequestHandler, Request, Response, NextFunction } from "express";
 import { ValidationError } from "../errors/index.js";
 
+/**
+ * Returns Express middleware that validates and coerces req[property] against a Zod schema.
+ * On success, replaces req[property] with the parsed (and transformed) value.
+ * On failure, calls next(ValidationError) with the Zod issue messages.
+ *
+ * @param {z.ZodTypeAny} schema - Zod schema to validate against
+ * @param {"body" | "params" | "query"} [property="body"] - Which part of the request to validate
+ * @returns {RequestHandler} Express middleware
+ *
+ * @example
+ * router.post("/", validate(createUserSchema), userController.createUser);
+ * router.get("/:id", validate(idParamSchema, "params"), controller.getById);
+ */
 export function validate(
   schema: z.ZodTypeAny,
   property: "body" | "params" | "query" = "body"
-) {
+): RequestHandler {
   return (req: Request, _res: Response, next: NextFunction) => {
     const result = schema.safeParse(req[property]);
     if (!result.success) {

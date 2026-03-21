@@ -3,6 +3,11 @@ import { SERVER } from "./config/env.js";
 import { prisma } from "./config/prismaClient.js";
 
 async function startServer(): Promise<void> {
+  if (!process.env.JWT_SECRET) {
+    console.error("[LOG] server.startServer: JWT_SECRET is not configured — aborting");
+    process.exit(1);
+  }
+
   try {
     await prisma.$connect();
     console.log("[LOG] server.startServer: Database connected");

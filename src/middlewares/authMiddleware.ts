@@ -3,7 +3,20 @@ import { Request, Response, NextFunction } from "express";
 import { prisma } from "../config/prismaClient.js";
 import { NotAuthenticatedError } from "../errors/index.js";
 import { AUTH_CONFIG, COOKIE_CONFIG } from "../config/env.js";
-import { userOutputDTO } from "../dtos/index.js";
+import { userOutputDTO, type UserOutput } from "../dtos/index.js";
+
+/**
+ * Returns the authenticated user from the request, or throws NotAuthenticatedError.
+ * Use in any controller handler on a route protected by requireAuth middleware.
+ *
+ * @param {Request} req - Express request
+ * @returns {UserOutput} The authenticated user
+ * @throws {NotAuthenticatedError} If req.user is not populated
+ */
+export function getAuthUser(req: Request): UserOutput {
+  if (!req.user) throw new NotAuthenticatedError();
+  return req.user;
+}
 
 /**
  * Middleware to ensure the user is authenticated.
@@ -27,10 +40,6 @@ export async function requireAuth(
     const token: string | undefined = req.cookies[COOKIE_CONFIG.NAME];
     if (!token) {
       return next(new NotAuthenticatedError("No authentication token provided"));
-    }
-
-    if (!AUTH_CONFIG.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not configured");
     }
 
     // cast is safe — we control the payload shape when signing

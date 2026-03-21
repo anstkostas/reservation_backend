@@ -4,10 +4,8 @@ import { Role } from "../generated/prisma/client.js";
 import { userRepository, restaurantRepository } from "../repositories/index.js";
 import { userOutputDTO, restaurantOutputDTO, type UserOutput, type RestaurantOutput } from "../dtos/index.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
+import { SALT_ROUNDS } from "../constants/index.js";
 import type { CreateUserInput } from "../validation/index.js";
-
-// Matches the value enforced in CLAUDE.md and used in the original JS codebase
-const BCRYPT_SALT_ROUNDS = 10;
 
 export const userService = {
   /**
@@ -40,12 +38,12 @@ export const userService = {
 
     const exists = await userRepository.findByEmail(email);
     if (exists) {
-      throw new ValidationError("Email already in use", ["Email already in use"]);
+      throw new ValidationError("Email already in use");
     }
 
     // Role is derived server-side — if a restaurantId is provided the user is an owner
     const role = restaurantId ? Role.owner : Role.customer;
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     // prisma.$transaction rolls back automatically if the callback throws
     const user = await prisma.$transaction(async (tx) => {

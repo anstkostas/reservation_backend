@@ -170,9 +170,9 @@ export const reservationService = {
       if (data.time !== undefined) updatePayload.time = parseTimeString(data.time);
       if (data.persons !== undefined) updatePayload.persons = data.persons;
 
-      // updated can only be null if the row was deleted between findById and update
       const updated = await reservationRepository.update(id, updatePayload, tx);
-      return reservationOutputDTO(updated!);
+      if (!updated) throw new NotFoundError("Reservation not found");
+      return reservationOutputDTO(updated);
     });
   },
 
@@ -190,22 +190,25 @@ export const reservationService = {
     id: string,
     customer: UserOutput
   ): Promise<ReservationOutput> {
-    const reservation = await reservationRepository.findById(id);
-    if (!reservation) throw new NotFoundError("Reservation not found");
+    return prisma.$transaction(async (tx) => {
+      const reservation = await reservationRepository.findById(id, tx);
+      if (!reservation) throw new NotFoundError("Reservation not found");
 
-    if (reservation.customerId !== customer.id) {
-      throw new ForbiddenError("Cannot cancel another customer's reservation");
-    }
+      if (reservation.customerId !== customer.id) {
+        throw new ForbiddenError("Cannot cancel another customer's reservation");
+      }
 
-    if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
-      throw new ValidationError("Only active reservations can be canceled");
-    }
+      if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
+        throw new ValidationError("Only active reservations can be canceled");
+      }
 
-    // Soft cancel — sets status to "canceled" instead of deleting the row
-    const updated = await reservationRepository.update(id, {
-      status: RESERVATION_STATUS.CANCELED,
+      // Soft cancel — sets status to "canceled" instead of deleting the row
+      const updated = await reservationRepository.update(id, {
+        status: RESERVATION_STATUS.CANCELED,
+      }, tx);
+      if (!updated) throw new NotFoundError("Reservation not found");
+      return reservationOutputDTO(updated);
     });
-    return reservationOutputDTO(updated!);
   },
 
   /**
@@ -230,28 +233,31 @@ export const reservationService = {
       );
     }
 
-    const restaurant = await restaurantRepository.findByOwnerId(user.id);
-    if (!restaurant) throw new ValidationError("Owner has no assigned restaurant");
+    return prisma.$transaction(async (tx) => {
+      const restaurant = await restaurantRepository.findByOwnerId(user.id);
+      if (!restaurant) throw new ValidationError("Owner has no assigned restaurant");
 
-    const reservation = await reservationRepository.findById(id);
-    if (!reservation) throw new NotFoundError("Reservation not found");
+      const reservation = await reservationRepository.findById(id, tx);
+      if (!reservation) throw new NotFoundError("Reservation not found");
 
-    if (reservation.restaurantId !== restaurant.id) {
-      throw new ForbiddenError("Cannot resolve reservation for another restaurant");
-    }
+      if (reservation.restaurantId !== restaurant.id) {
+        throw new ForbiddenError("Cannot resolve reservation for another restaurant");
+      }
 
-    if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
-      throw new ValidationError("Only active reservations can be resolved");
-    }
+      if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
+        throw new ValidationError("Only active reservations can be resolved");
+      }
 
-    // Zod validates "no-show" (hyphen) but Prisma stores no_show (underscore) internally
-    const prismaStatus =
-      status === "no-show"
-        ? RESERVATION_STATUS.NO_SHOW
-        : RESERVATION_STATUS.COMPLETED;
+      // Zod validates "no-show" (hyphen) but Prisma stores no_show (underscore) internally
+      const prismaStatus =
+        status === "no-show"
+          ? RESERVATION_STATUS.NO_SHOW
+          : RESERVATION_STATUS.COMPLETED;
 
-    const updated = await reservationRepository.update(id, { status: prismaStatus });
-    return reservationOutputDTO(updated!);
+      const updated = await reservationRepository.update(id, { status: prismaStatus }, tx);
+      if (!updated) throw new NotFoundError("Reservation not found");
+      return reservationOutputDTO(updated);
+    });
   },
 
   /**

@@ -6,6 +6,8 @@
  */
 import express from "express";
 import { restaurantController } from "../controllers/index.js";
+import { validate } from "../middlewares/index.js";
+import { idParamSchema } from "../validation/index.js";
 
 const router = express.Router();
 
@@ -60,6 +62,6 @@ router.get("/", restaurantController.getAllRestaurants);
  *       404:
  *         description: Restaurant not found
  */
-router.get("/:id", restaurantController.getRestaurantById);
+router.get("/:id", validate(idParamSchema, "params"), restaurantController.getRestaurantById);
 
 export default router;

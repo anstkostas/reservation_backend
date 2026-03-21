@@ -2,13 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import { reservationService } from "../services/index.js";
 import { sendResponse } from "../utils/index.js";
 import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import { getAuthUser } from "../middlewares/index.js";
 import type {
   CreateReservationInput,
   UpdateReservationInput,
   ReservationStatusInput,
 } from "../validation/index.js";
 
-// req.user is guaranteed by requireAuth middleware on all reservation routes
 export const reservationController = {
   /**
    * Creates a new reservation for the authenticated customer at the specified restaurant.
@@ -19,7 +19,7 @@ export const reservationController = {
       const reservation = await reservationService.createReservation(
         restaurantId,
         req.body as CreateReservationInput,
-        req.user!
+        getAuthUser(req)
       );
       sendResponse(res, reservation, HTTP_STATUS.CREATED, RESPONSE_MESSAGES.RESERVATION.CREATED);
     } catch (err) {
@@ -36,7 +36,7 @@ export const reservationController = {
       const updatedReservation = await reservationService.updateReservation(
         id,
         req.body as UpdateReservationInput,
-        req.user!
+        getAuthUser(req)
       );
       sendResponse(res, updatedReservation, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.UPDATED);
     } catch (err) {
@@ -50,7 +50,7 @@ export const reservationController = {
   async cancelReservation(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params as { id: string };
-      const canceledReservation = await reservationService.cancelReservation(id, req.user!);
+      const canceledReservation = await reservationService.cancelReservation(id, getAuthUser(req));
       sendResponse(res, canceledReservation, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.CANCELED);
     } catch (err) {
       next(err);
@@ -64,7 +64,7 @@ export const reservationController = {
     try {
       const { id } = req.params as { id: string };
       const { status } = req.body as ReservationStatusInput;
-      const resolvedReservation = await reservationService.resolveReservation(id, status, req.user!);
+      const resolvedReservation = await reservationService.resolveReservation(id, status, getAuthUser(req));
       const message =
         status === "completed"
           ? RESPONSE_MESSAGES.RESERVATION.COMPLETED
@@ -80,7 +80,7 @@ export const reservationController = {
    */
   async listOwnerReservations(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const reservations = await reservationService.listOwnerReservations(req.user!);
+      const reservations = await reservationService.listOwnerReservations(getAuthUser(req));
       sendResponse(res, reservations, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.RETRIEVED);
     } catch (err) {
       next(err);
@@ -92,7 +92,7 @@ export const reservationController = {
    */
   async listCustomerReservations(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const reservations = await reservationService.listCustomerReservations(req.user!);
+      const reservations = await reservationService.listCustomerReservations(getAuthUser(req));
       sendResponse(res, reservations, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.RETRIEVED);
     } catch (err) {
       next(err);

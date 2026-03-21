@@ -6,6 +6,8 @@ import {
   createReservationSchema,
   updateReservationSchema,
   reservationStatusSchema,
+  idParamSchema,
+  restaurantIdParamSchema,
 } from "../validation/index.js";
 
 const router = express.Router();
@@ -81,6 +83,7 @@ router.post(
   "/restaurants/:restaurantId",
   requireAuth,
   requireRole(Role.customer),
+  validate(restaurantIdParamSchema, "params"),
   validate(createReservationSchema),
   reservationController.createReservation
 );
@@ -196,6 +199,7 @@ router.put(
   "/:id",
   requireAuth,
   requireRole(Role.customer),
+  validate(idParamSchema, "params"),
   validate(updateReservationSchema),
   reservationController.updateReservation
 );
@@ -260,6 +264,7 @@ router.delete(
   "/:id",
   requireAuth,
   requireRole(Role.customer),
+  validate(idParamSchema, "params"),
   reservationController.cancelReservation
 );
 
@@ -336,6 +341,7 @@ router.post(
   "/:id/resolve",
   requireAuth,
   requireRole(Role.owner),
+  validate(idParamSchema, "params"),
   validate(reservationStatusSchema),
   reservationController.resolveReservation
 );

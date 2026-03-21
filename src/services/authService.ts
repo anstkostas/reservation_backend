@@ -29,10 +29,6 @@ export const authService = {
       throw new ValidationError("Invalid email or password");
     }
 
-    if (!AUTH_CONFIG.JWT_SECRET) {
-      throw new Error("[LOG] authService.login: JWT_SECRET is not configured");
-    }
-
     const token = jwt.sign(
       { id: user.id, role: user.role },
       AUTH_CONFIG.JWT_SECRET,
@@ -47,13 +43,11 @@ export const authService = {
    *
    * @param {CreateUserInput} data - Validated signup data
    * @returns {Promise<LoginOutput>} Login output DTO with the newly created user and token
+   * @throws {ValidationError} If email is taken or owner business rules are violated — bubbled from userService.createUser
+   * @throws {NotFoundError} If the claimed restaurant does not exist — bubbled from userService.createUser
    */
   async signup(data: CreateUserInput): Promise<LoginOutput> {
     const user = await userService.createUser(data);
-
-    if (!AUTH_CONFIG.JWT_SECRET) {
-      throw new Error("[LOG] authService.signup: JWT_SECRET is not configured");
-    }
 
     const token = jwt.sign(
       { id: user.id, role: user.role },

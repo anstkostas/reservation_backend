@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { authService } from "../services/index.js";
 import { sendResponse } from "../utils/index.js";
+import { getAuthUser } from "../middlewares/index.js";
 import { COOKIE_CONFIG } from "../config/env.js";
 import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
 import type { LoginInput, CreateUserInput } from "../validation/index.js";
@@ -65,7 +66,7 @@ export const authController = {
    */
   async getCurrentUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      sendResponse(res, req.user, HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.USER_RETRIEVED);
+      sendResponse(res, getAuthUser(req), HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.USER_RETRIEVED);
     } catch (err) {
       next(err);
     }

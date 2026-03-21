@@ -2,12 +2,6 @@ import { prisma } from "../config/prismaClient.js";
 import { Prisma, type User, type Role } from "../generated/prisma/client.js";
 import { PRISMA_ERROR_CODES } from "../constants/index.js";
 
-// Transaction client omits connection/lifecycle methods — typed for use inside prisma.$transaction
-type TxClient = Omit<
-  typeof prisma,
-  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
->;
-
 interface UserFilter {
   role?: Role;
 }
@@ -17,10 +11,10 @@ export const userRepository = {
    * Creates a new user record.
    *
    * @param {Prisma.UserCreateInput} data - Fields for the new user
-   * @param {TxClient} [tx] - Optional Prisma transaction client
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<User>} The created user
    */
-  async create(data: Prisma.UserCreateInput, tx?: TxClient): Promise<User> {
+  async create(data: Prisma.UserCreateInput, tx?: Prisma.TransactionClient): Promise<User> {
     const client = tx ?? prisma;
     return client.user.create({ data });
   },

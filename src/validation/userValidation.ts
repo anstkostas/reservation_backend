@@ -5,7 +5,7 @@ const passwordPattern =
 
 export const createUserSchema = z.object({
   // .transform() runs after validation — email is valid before it's lowercased
-  email: z.string().email().transform((v) => v.trim().toLowerCase()),
+  email: z.email().transform((v) => v.trim().toLowerCase()),
   password: z.string().regex(
     passwordPattern,
     "Password must be at least 8 characters, include uppercase, lowercase, number, and special character"
@@ -15,7 +15,6 @@ export const createUserSchema = z.object({
   role: z.enum(["owner", "customer"]),
   // empty string, null, or undefined → null; valid UUID passes through
   restaurantId: z
-    .string()
     .uuid()
     .nullish()
     .or(z.literal(""))
@@ -25,7 +24,7 @@ export const createUserSchema = z.object({
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 
 export const loginSchema = z.object({
-  email: z.string().email().transform((v) => v.trim().toLowerCase()),
+  email: z.email().transform((v) => v.trim().toLowerCase()),
   // min(1) — non-empty; hashing is handled by the service
   password: z.string().min(1),
 });

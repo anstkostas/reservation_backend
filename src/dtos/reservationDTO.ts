@@ -1,4 +1,4 @@
-import type { Reservation, Restaurant, User } from "../generated/prisma/client.js";
+import type { Reservation, Restaurant, User, ReservationStatus } from "../generated/prisma/client.js";
 import { normalizeDBTime } from "../utils/index.js";
 
 // Joined shape returned by the repository — restaurant and customer are optionally included
@@ -12,7 +12,7 @@ export interface ReservationOutput {
   date: Date;
   time: string;
   persons: number;
-  status: string;
+  status: ReservationStatus;
   restaurantId: string;
   restaurantName: string | undefined;
   restaurantAddress: string | undefined;

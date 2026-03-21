@@ -1,18 +1,12 @@
 import { prisma } from "../config/prismaClient.js";
-import { Prisma, type Reservation } from "../generated/prisma/client.js";
+import { Prisma, type Reservation, type ReservationStatus } from "../generated/prisma/client.js";
 import { PRISMA_ERROR_CODES } from "../constants/index.js";
 import type { ReservationWithRelations } from "../dtos/reservationDTO.js";
-
-// Transaction client omits connection/lifecycle methods — typed for use inside prisma.$transaction
-type TxClient = Omit<
-  typeof prisma,
-  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
->;
 
 interface ReservationFilter {
   restaurantId?: string;
   customerId?: string;
-  status?: string;
+  status?: ReservationStatus;
 }
 
 export const reservationRepository = {
@@ -25,7 +19,7 @@ export const reservationRepository = {
    */
   async create(
     data: Prisma.ReservationCreateInput,
-    tx?: TxClient
+    tx?: Prisma.TransactionClient
   ): Promise<Reservation> {
     const client = tx ?? prisma;
     return client.reservation.create({ data });
@@ -38,7 +32,7 @@ export const reservationRepository = {
    * @param {TxClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Reservation | null>} The reservation, or null if not found
    */
-  async findById(id: string, tx?: TxClient): Promise<Reservation | null> {
+  async findById(id: string, tx?: Prisma.TransactionClient): Promise<Reservation | null> {
     const client = tx ?? prisma;
     return client.reservation.findUnique({ where: { id } });
   },
@@ -55,7 +49,7 @@ export const reservationRepository = {
     const where: Prisma.ReservationWhereInput = {};
     if (filter.restaurantId) where.restaurantId = filter.restaurantId;
     if (filter.customerId) where.customerId = filter.customerId;
-    if (filter.status) where.status = { equals: filter.status as Reservation["status"] };
+    if (filter.status) where.status = { equals: filter.status };
 
     const results = await prisma.reservation.findMany({
       where,
@@ -68,6 +62,7 @@ export const reservationRepository = {
       orderBy: [{ date: "desc" }, { time: "desc" }],
     });
 
+    // cast is safe — the include clause above guarantees restaurant and customer are present
     return results as ReservationWithRelations[];
   },
 
@@ -83,7 +78,7 @@ export const reservationRepository = {
   async update(
     id: string,
     data: Prisma.ReservationUpdateInput,
-    tx?: TxClient
+    tx?: Prisma.TransactionClient
   ): Promise<Reservation | null> {
     const client = tx ?? prisma;
     try {
@@ -107,7 +102,7 @@ export const reservationRepository = {
    * @param {TxClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Reservation | null>} The deleted reservation, or null if not found
    */
-  async delete(id: string, tx?: TxClient): Promise<Reservation | null> {
+  async delete(id: string, tx?: Prisma.TransactionClient): Promise<Reservation | null> {
     const client = tx ?? prisma;
     try {
       return await client.reservation.delete({ where: { id } });
@@ -154,7 +149,7 @@ export const reservationRepository = {
     restaurantId: string,
     date: Date,
     time: string,
-    tx?: TxClient
+    tx?: Prisma.TransactionClient
   ): Promise<number> {
     const client = tx ?? prisma;
     // PostgreSQL TIME cast requires HH:MM:SS — append seconds to the HH:MM string from Zod

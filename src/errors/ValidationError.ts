@@ -1,6 +1,10 @@
 import { Prisma } from "../generated/prisma/client.js";
 import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
 
+/**
+ * Thrown when request input fails validation or a business rule is violated.
+ * Maps to HTTP 400 Bad Request. Carries an optional array of field-level detail messages.
+ */
 export class ValidationError extends Error {
   statusCode: number;
   details: string[];
