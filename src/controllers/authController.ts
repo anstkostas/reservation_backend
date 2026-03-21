@@ -1,20 +1,18 @@
-const { authDTO } = require("../dtos");
-const { authService } = require("../services");
-const { sendResponse } = require("../utils");
-const { COOKIE_CONFIG } = require("../config/env.js");
-const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../constants");
+import { Request, Response, NextFunction } from "express";
+import { authService } from "../services/index.js";
+import { sendResponse } from "../utils/index.js";
+import { COOKIE_CONFIG } from "../config/env.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import type { LoginInput, CreateUserInput } from "../validation/index.js";
 
-module.exports = {
+export const authController = {
   /**
    * Authenticates a user and sets the auth cookie on success.
-   *
-   * @async
-   * @throws {ValidationError} If credentials are missing or invalid
    */
-  async login(req, res, next) {
+  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const input = authDTO.loginInputDTO(req.body);
-      const { user, token } = await authService.login(input);
+      // req.body is validated and sanitized by the validate middleware before this runs
+      const { user, token } = await authService.login(req.body as LoginInput);
       res.cookie(COOKIE_CONFIG.NAME, token, {
         httpOnly: COOKIE_CONFIG.HTTP_ONLY,
         secure: COOKIE_CONFIG.SECURE,
@@ -29,17 +27,14 @@ module.exports = {
 
   /**
    * Logs out a user by clearing the authentication cookie.
-   *
-   * @async
    */
-  async logout(_req, res, next) {
+  async logout(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       res.clearCookie(COOKIE_CONFIG.NAME, {
         httpOnly: COOKIE_CONFIG.HTTP_ONLY,
         secure: COOKIE_CONFIG.SECURE,
         sameSite: COOKIE_CONFIG.SAME_SITE,
       });
-
       sendResponse(res, null, HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.LOGOUT_SUCCESS);
     } catch (err) {
       next(err);
@@ -48,14 +43,10 @@ module.exports = {
 
   /**
    * Creates a new user account and sets the auth cookie on success.
-   *
-   * @async
-   * @throws {ValidationError} If required fields are missing or email is already in use
    */
-  async signup(req, res, next) {
+  async signup(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const input = authDTO.signupInputDTO(req.body);
-      const { user, token } = await authService.signup(input);
+      const { user, token } = await authService.signup(req.body as CreateUserInput);
       res.cookie(COOKIE_CONFIG.NAME, token, {
         httpOnly: COOKIE_CONFIG.HTTP_ONLY,
         secure: COOKIE_CONFIG.SECURE,
@@ -71,10 +62,8 @@ module.exports = {
   /**
    * Returns the currently authenticated user from the request context.
    * req.user is populated by the requireAuth middleware.
-   *
-   * @async
    */
-  async getCurrentUser(req, res, next) {
+  async getCurrentUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       sendResponse(res, req.user, HTTP_STATUS.OK, RESPONSE_MESSAGES.AUTH.USER_RETRIEVED);
     } catch (err) {
