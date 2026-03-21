@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { Prisma } from "../generated/prisma/client.js";
 import { ENV } from "../config/env.js";
 import {
   ValidationError,
@@ -39,6 +40,13 @@ export function globalErrorHandler(
     message = err.message;
     // details only exists on ValidationError
     details = err instanceof ValidationError ? err.details : undefined;
+  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    // Safety net — Prisma constraint errors that were not caught in services
+    // (e.g. P2002 unique violation). fromPrisma() maps known codes to readable messages.
+    const converted = ValidationError.fromPrisma(err);
+    statusCode = converted.statusCode;
+    message = converted.message;
+    details = converted.details;
   }
 
   res.status(statusCode).json({
