@@ -4,10 +4,10 @@
  *   name: Auth
  *   description: Authentication endpoints
  */
-const express = require("express");
-const { authController } = require("../controllers");
-const { requireAuth, validate } = require("../middlewares");
-const { userValidation } = require("../validation");
+import express from "express";
+import { authController } from "../controllers/index.js";
+import { requireAuth, validate } from "../middlewares/index.js";
+import { createUserSchema, loginSchema } from "../validation/index.js";
 
 const router = express.Router();
 
@@ -28,10 +28,14 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Login successful
- *       401:
- *         description: Invalid credentials
+ *       400:
+ *         description: Invalid credentials or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/login", authController.login);
+router.post("/login", validate(loginSchema), authController.login);
 
 /**
  * @swagger
@@ -97,7 +101,7 @@ router.post("/logout", requireAuth, authController.logout);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/signup", validate(userValidation.createUserSchema), authController.signup);
+router.post("/signup", validate(createUserSchema), authController.signup);
 
 /**
  * @swagger
@@ -136,4 +140,4 @@ router.post("/signup", validate(userValidation.createUserSchema), authController
  */
 router.get("/me", requireAuth, authController.getCurrentUser);
 
-module.exports = router;
+export default router;

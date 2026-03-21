@@ -1,5 +1,5 @@
-const swaggerJSDoc = require("swagger-jsdoc");
-const { SERVER } = require("../config/env.js");
+import swaggerJSDoc from "swagger-jsdoc";
+import { SERVER } from "../config/env.js";
 
 const swaggerSpec = swaggerJSDoc({
   definition: {
@@ -27,12 +27,20 @@ const swaggerSpec = swaggerJSDoc({
         AuthResponse: {
           type: "object",
           properties: {
-            user: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            data: {
               $ref: "#/components/schemas/User",
+            },
+            message: {
+              type: "string",
+              example: "Logged in successfully",
             },
           },
           description:
-            "Response returned after a successful login or signup, containing user information.",
+            "Response returned after a successful login or signup. The JWT is set as an httpOnly cookie — it is not included in the response body.",
         },
         User: {
           // userOutputDTO
@@ -82,19 +90,41 @@ const swaggerSpec = swaggerJSDoc({
             },
             status: {
               type: "string",
-              enum: ["active", "canceled", "completed"],
+              enum: ["active", "canceled", "completed", "no-show"],
             },
             restaurantId: {
               type: "string",
               format: "uuid",
             },
+            restaurantName: {
+              type: "string",
+              nullable: true,
+            },
+            restaurantAddress: {
+              type: "string",
+              nullable: true,
+            },
+            restaurantPhone: {
+              type: "string",
+              nullable: true,
+            },
             customerId: {
               type: "string",
               format: "uuid",
             },
+            customer: {
+              type: "object",
+              nullable: true,
+              properties: {
+                id: { type: "string", format: "uuid" },
+                firstname: { type: "string" },
+                lastname: { type: "string" },
+                email: { type: "string", format: "email" },
+              },
+            },
           },
           description:
-            "Reservation object returned by the API, including the customer and restaurant identifiers and the current status.",
+            "Reservation object returned by the API. Includes joined restaurant and customer fields when available.",
         },
         Restaurant: {
           type: "object",
@@ -107,6 +137,12 @@ const swaggerSpec = swaggerJSDoc({
               type: "string",
             },
             description: {
+              type: "string",
+            },
+            address: {
+              type: "string",
+            },
+            phone: {
               type: "string",
             },
             capacity: {
@@ -152,34 +188,45 @@ const swaggerSpec = swaggerJSDoc({
         },
         SignupInput: {
           type: "object",
-          required: ["email", "password"],
+          required: ["email", "password", "firstname", "lastname", "role"],
           properties: {
             firstname: {
               type: "string",
+              minLength: 4,
+              maxLength: 50,
               example: "John",
             },
             lastname: {
               type: "string",
+              minLength: 4,
+              maxLength: 50,
               example: "Doe",
             },
             email: {
               type: "string",
+              format: "email",
               example: "john@example.com",
             },
             password: {
               type: "string",
               format: "password",
+              description: "Min 8 characters, must include uppercase, lowercase, number, and special character",
               example: "StrongPassword123!",
+            },
+            role: {
+              type: "string",
+              enum: ["customer", "owner"],
             },
             restaurantId: {
               type: "string",
               format: "uuid",
               nullable: true,
+              description: "Required when role is 'owner' — the restaurant to claim",
               example: null,
             },
           },
           description:
-            "Data required to create a new user account. Email and password are mandatory; other fields are optional.",
+            "Data required to create a new user account. For owners, restaurantId must reference an existing unowned restaurant.",
         },
         LoginInput: {
           type: "object",
@@ -221,7 +268,7 @@ const swaggerSpec = swaggerJSDoc({
           },
           additionalProperties: false,
           description:
-            "Input data for creating a reservation. Includes date, time, and optional number of persons. Status and customerId are assigned automatically and should not be provided.",
+            "Input data for creating a reservation. Includes date, time, and optional number of persons. Status and customerId are assigned automatically.",
         },
         UpdateReservationInput: {
           type: "object",
@@ -243,7 +290,7 @@ const swaggerSpec = swaggerJSDoc({
           },
           additionalProperties: false,
           description:
-            "Input fields for updating a reservation. Only 'date', 'time', and 'persons' can be updated. Status, restaurantId, and customerId are immutable.",
+            "Input fields for updating a reservation. Only 'date', 'time', and 'persons' can be updated. At least one field must be provided.",
         },
       },
     },
@@ -253,7 +300,7 @@ const swaggerSpec = swaggerJSDoc({
       },
     ],
   },
-  apis: ["./src/routes/**/*.js"],
+  apis: ["./src/routes/**/*.ts"],
 });
 
-module.exports = swaggerSpec;
+export default swaggerSpec;

@@ -1,14 +1,13 @@
-const express = require("express");
-const { restaurantController } = require("../controllers");
-
-const router = express.Router();
-
 /**
  * @swagger
  * tags:
  *   name: Restaurants
  *   description: Restaurant management
  */
+import express from "express";
+import { restaurantController } from "../controllers/index.js";
+
+const router = express.Router();
 
 /**
  * @swagger
@@ -63,4 +62,4 @@ router.get("/", restaurantController.getAllRestaurants);
  */
 router.get("/:id", restaurantController.getRestaurantById);
 
-module.exports = router;
+export default router;

@@ -1,7 +1,12 @@
-const express = require("express");
-const { reservationController } = require("../controllers");
-const { requireAuth, requireRole, validate } = require("../middlewares");
-const { reservationValidation } = require("../validation");
+import express from "express";
+import { Role } from "../generated/prisma/client.js";
+import { reservationController } from "../controllers/index.js";
+import { requireAuth, requireRole, validate } from "../middlewares/index.js";
+import {
+  createReservationSchema,
+  updateReservationSchema,
+  reservationStatusSchema,
+} from "../validation/index.js";
 
 const router = express.Router();
 
@@ -48,7 +53,7 @@ const router = express.Router();
  *                 data:
  *                   $ref: '#/components/schemas/Reservation'
  *       400:
- *         description: Validation error (invalid date/time, overcapacity, overbooking, wrong role)
+ *         description: Validation error (invalid date/time, overcapacity, overbooking)
  *         content:
  *           application/json:
  *             schema:
@@ -75,8 +80,8 @@ const router = express.Router();
 router.post(
   "/restaurants/:restaurantId",
   requireAuth,
-  requireRole("customer"),
-  validate(reservationValidation.createReservationSchema),
+  requireRole(Role.customer),
+  validate(createReservationSchema),
   reservationController.createReservation
 );
 
@@ -84,8 +89,8 @@ router.post(
  * @swagger
  * /reservations/my-reservations:
  *   get:
- *     summary: List all active reservations for the authenticated customer
- *     description: Retrieves all reservations (active, canceled, completed) for the authenticated customer.
+ *     summary: List all reservations for the authenticated customer
+ *     description: Retrieves all reservations (active, canceled, completed, no-show) for the authenticated customer.
  *     tags:
  *       - Reservations
  *     security:
@@ -101,9 +106,6 @@ router.post(
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Reservations fetched successfully
  *                 data:
  *                   type: array
  *                   items:
@@ -124,7 +126,7 @@ router.post(
 router.get(
   "/my-reservations",
   requireAuth,
-  requireRole("customer"),
+  requireRole(Role.customer),
   reservationController.listCustomerReservations
 );
 
@@ -163,13 +165,10 @@ router.get(
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Reservation updated successfully
  *                 data:
  *                   $ref: '#/components/schemas/Reservation'
  *       400:
- *         description: Validation error (invalid input, overbooking, wrong status, ownership modification)
+ *         description: Validation error (invalid input, overbooking, wrong status)
  *         content:
  *           application/json:
  *             schema:
@@ -181,7 +180,7 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
- *         description: Forbidden (wrong role or modifying another user’s reservation)
+ *         description: Forbidden (wrong role or modifying another user's reservation)
  *         content:
  *           application/json:
  *             schema:
@@ -196,8 +195,8 @@ router.get(
 router.put(
   "/:id",
   requireAuth,
-  requireRole("customer"),
-  validate(reservationValidation.updateReservationSchema),
+  requireRole(Role.customer),
+  validate(updateReservationSchema),
   reservationController.updateReservation
 );
 
@@ -230,13 +229,10 @@ router.put(
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Reservation canceled successfully
  *                 data:
  *                   $ref: '#/components/schemas/Reservation'
  *       400:
- *         description: Validation error (e.g., reservation already canceled or completed)
+ *         description: Reservation is not active
  *         content:
  *           application/json:
  *             schema:
@@ -263,7 +259,7 @@ router.put(
 router.delete(
   "/:id",
   requireAuth,
-  requireRole("customer"),
+  requireRole(Role.customer),
   reservationController.cancelReservation
 );
 
@@ -274,7 +270,7 @@ router.delete(
  * /reservations/{id}/resolve:
  *   post:
  *     summary: Mark a reservation as completed or no-show
- *     description: Allows an owner to mark an active reservation as "completed" or "no-show". Only the owner of the restaurant associated with the reservation can perform this action. Only active reservations can be resolved.
+ *     description: Allows an owner to mark an active reservation as "completed" or "no-show". Only the owner of the restaurant associated with the reservation can perform this action.
  *     tags:
  *       - Reservations
  *     security:
@@ -287,6 +283,17 @@ router.delete(
  *           type: string
  *           format: uuid
  *         description: UUID of the reservation to resolve
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [completed, no-show]
  *     responses:
  *       200:
  *         description: Reservation resolved successfully
@@ -298,13 +305,10 @@ router.delete(
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Reservation resolved successfully
  *                 data:
  *                   $ref: '#/components/schemas/Reservation'
  *       400:
- *         description: Validation error (e.g., reservation not active, owner has no restaurant)
+ *         description: Reservation is not active or owner has no restaurant
  *         content:
  *           application/json:
  *             schema:
@@ -316,7 +320,7 @@ router.delete(
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
- *         description: Forbidden (attempting to complete a reservation for another restaurant)
+ *         description: Forbidden (not an owner, or reservation belongs to another restaurant)
  *         content:
  *           application/json:
  *             schema:
@@ -331,24 +335,24 @@ router.delete(
 router.post(
   "/:id/resolve",
   requireAuth,
-  requireRole("owner"),
-  validate(reservationValidation.reservationStatusSchema),
+  requireRole(Role.owner),
+  validate(reservationStatusSchema),
   reservationController.resolveReservation
 );
 
 /**
  * @swagger
- * /reservations/owner/reservations:
+ * /reservations/owner-reservations:
  *   get:
- *     summary: List all active reservations for the owner's restaurant
- *     description: Retrieves all active reservations for the restaurant owned by the authenticated user. Only owners can access this endpoint.
+ *     summary: List all reservations for the owner's restaurant
+ *     description: Retrieves all reservations for the restaurant owned by the authenticated user. Only owners can access this endpoint.
  *     tags:
  *       - Reservations
  *     security:
  *       - cookieAuth: []
  *     responses:
  *       200:
- *         description: Active reservations retrieved successfully
+ *         description: Reservations retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -357,9 +361,6 @@ router.post(
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Active reservations fetched
  *                 data:
  *                   type: array
  *                   items:
@@ -377,7 +378,7 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       400:
- *         description: Validation error (e.g., owner has no assigned restaurant)
+ *         description: Owner has no assigned restaurant
  *         content:
  *           application/json:
  *             schema:
@@ -386,8 +387,8 @@ router.post(
 router.get(
   "/owner-reservations",
   requireAuth,
-  requireRole("owner"),
+  requireRole(Role.owner),
   reservationController.listOwnerReservations
 );
 
-module.exports = router;
+export default router;
