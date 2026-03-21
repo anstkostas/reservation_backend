@@ -1,4 +1,22 @@
 import { ValidationError } from "../errors/index.js";
+import { RESERVATION_BOOKING_WINDOW_MONTHS } from "../constants/index.js";
+
+/**
+ * Converts an HH:MM time string to a Date object with only the UTC time set.
+ * Required because Prisma stores TIME columns as Date — the epoch date is a sentinel;
+ * only the UTC time portion (hours/minutes) is meaningful.
+ *
+ * Symmetric inverse of {@link normalizeDBTime}.
+ *
+ * @param {string} time - Time string in HH:MM 24-hour format
+ * @returns {Date} Date object at epoch with UTC hours/minutes set
+ */
+export function parseTimeString(time: string): Date {
+  const [hours, minutes] = time.split(":").map(Number);
+  const d = new Date(0); // epoch — only UTC time portion stored by @db.Time
+  d.setUTCHours(hours, minutes, 0, 0);
+  return d;
+}
 
 /**
  * Validates that a reservation date + time represent a valid future datetime
@@ -35,7 +53,7 @@ export function validateReservationDateTime(date: Date | string, time: string): 
     throw new ValidationError("Reservation datetime cannot be in the past");
   }
   const twoMonthsFromNow = new Date();
-  twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+  twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + RESERVATION_BOOKING_WINDOW_MONTHS);
   if (dt > twoMonthsFromNow) {
     throw new ValidationError("Reservation must be within 2 months from today");
   }
