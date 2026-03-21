@@ -1,11 +1,11 @@
-const express = require("express");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const { FRONTEND_SERVER } = require("./config/env.js");
-const swaggerUi = require("swagger-ui-express");
-const swaggerSpec = require("./docs/swagger");
-const { registerRoutes } = require("./routes");
-const { globalErrorHandler } = require("./middlewares");
+import express, { type Request, type Response } from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./docs/swagger.js";
+import { FRONTEND_SERVER } from "./config/env.js";
+import { registerRoutes } from "./routes/index.js";
+import { globalErrorHandler } from "./middlewares/index.js";
 
 const app = express();
 
@@ -29,7 +29,7 @@ registerRoutes(app);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // 404
-app.use((req, res) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     message: "Route not found",
@@ -38,4 +38,4 @@ app.use((req, res) => {
 
 app.use(globalErrorHandler);
 
-module.exports = app;
+export default app;
