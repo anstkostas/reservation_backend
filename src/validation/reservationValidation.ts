@@ -5,7 +5,8 @@ const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
 export const createReservationSchema = z.object({
   date: z.coerce.date(),
   time: z.string().regex(timePattern, "Time must be in HH:MM format"),
-  persons: z.number().int().min(1),
+  // default(1) — if omitted, one person is assumed; mirrors the old createReservationInputDTO default
+  persons: z.number().int().min(1).default(1),
 });
 
 export const updateReservationSchema = z
