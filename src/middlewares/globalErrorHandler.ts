@@ -3,6 +3,7 @@ import { Prisma } from "../generated/prisma/index.js";
 import { ENV } from "../config/env.js";
 import {
   ValidationError,
+  ValidationDetail,
   ForbiddenError,
   NotFoundError,
   NotAuthenticatedError,
@@ -28,7 +29,7 @@ export function globalErrorHandler(
 
   let statusCode = 500;
   let message = "Internal Server Error";
-  let details: string[] | undefined;
+  let details: ValidationDetail[] | undefined;
 
   if (
     err instanceof ValidationError ||

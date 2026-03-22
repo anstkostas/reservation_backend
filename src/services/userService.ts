@@ -54,9 +54,7 @@ export const userService = {
 
       if (role === Role.owner) {
         if (!restaurantId) {
-          throw new ValidationError("Owner must select a restaurant", [
-            "Restaurant is required for owner role",
-          ]);
+          throw new ValidationError("Restaurant is required for owner role");
         }
 
         const restaurant = await restaurantRepository.findById(restaurantId, tx);

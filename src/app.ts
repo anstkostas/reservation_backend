@@ -12,6 +12,14 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
+// Dev-phase request logger — logs all requests including 2xx on response finish
+app.use((req: Request, res: Response, next) => {
+  res.on("finish", () => {
+    console.log(`[LOG] ${req.method} ${req.url} → ${res.statusCode}`);
+  });
+  next();
+});
+
 // Enable trust proxy for secure cookies behind a reverse proxy (Heroku, Render, etc.)
 // Where I deploy MUST set .env to "production".
 app.set("trust proxy", 1);
