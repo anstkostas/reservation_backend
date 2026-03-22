@@ -22,7 +22,6 @@ import type {
 } from "../validation/index.js";
 import type { UserOutput } from "../dtos/index.js";
 
-
 export const reservationService = {
   /**
    * Creates a new reservation for a customer at a specific restaurant and time.
