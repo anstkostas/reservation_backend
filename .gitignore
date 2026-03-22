@@ -1,3 +1,4 @@
+.env
 .env.development
 .env.test
 .env.production
@@ -27,3 +28,5 @@ desktop.ini
 !.vscode/extensions.json
 
 .idea/
+
+/src/generated/prisma

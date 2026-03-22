@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  customer
+  owner
+}
+
+enum ReservationStatus {
+  active
+  canceled
+  completed
+  no_show @map("no-show")
+}
+
+model User {
+  id           String        @id @default(uuid()) @db.Uuid
+  firstname    String        @db.VarChar(100)
+  lastname     String        @db.VarChar(100)
+  email        String        @unique @db.VarChar(50)
+  password     String        @db.VarChar(100)
+  role         Role          @default(customer)
+  restaurant   Restaurant?
+  reservations Reservation[]
+
+  @@map("Users")
+}
+
+model Restaurant {
+  id            String        @id @default(uuid()) @db.Uuid
+  name          String
+  description   String
+  address       String
+  phone         String
+  capacity      Int           @default(0)
+  logoUrl       String
+  coverImageUrl String
+  ownerId       String?       @unique @db.Uuid
+  owner         User?         @relation(fields: [ownerId], references: [id])
+  reservations  Reservation[]
+
+  @@map("Restaurants")
+}
+
+model Reservation {
+  id           String            @id @default(uuid()) @db.Uuid
+  // date stored as PostgreSQL DATE — no time component
+  date         DateTime          @db.Date
+  // time stored as PostgreSQL TIME — Prisma returns as Date; only the time portion is meaningful
+  time         DateTime          @db.Time(6)
+  // informational only — 1 reservation = 1 table slot regardless of party size
+  persons      Int               @default(1)
+  status       ReservationStatus @default(active)
+  restaurantId String            @db.Uuid
+  customerId   String            @db.Uuid
+  restaurant   Restaurant        @relation(fields: [restaurantId], references: [id])
+  customer     User              @relation(fields: [customerId], references: [id])
+
+  @@map("Reservations")
+}
