@@ -1,4 +1,4 @@
-import { ReservationStatus } from "../generated/prisma/enums.js";
+import { ReservationStatus } from "../generated/prisma/index.js";
 
 // Single source of truth — keys follow SCREAMING_SNAKE_CASE convention;
 // values come from Prisma's generated enum to stay in sync with DB queries.

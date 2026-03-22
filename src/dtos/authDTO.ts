@@ -1,4 +1,4 @@
-import type { User } from "../generated/prisma/client.js";
+import type { User } from "../generated/prisma/index.js";
 import { userOutputDTO, type UserOutput } from "./userDTO.js";
 
 export interface LoginOutput {

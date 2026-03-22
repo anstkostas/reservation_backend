@@ -1,5 +1,5 @@
 import { prisma } from "../config/prismaClient.js";
-import { Prisma, type User, type Role } from "../generated/prisma/client.js";
+import { Prisma, type User, type Role } from "../generated/prisma/index.js";
 import { PRISMA_ERROR_CODES } from "../constants/index.js";
 
 interface UserFilter {

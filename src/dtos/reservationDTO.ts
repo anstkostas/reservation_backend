@@ -1,4 +1,4 @@
-import type { Reservation, Restaurant, User, ReservationStatus } from "../generated/prisma/client.js";
+import type { Reservation, Restaurant, User, ReservationStatus } from "../generated/prisma/index.js";
 import { normalizeDBTime } from "../utils/index.js";
 
 // Joined shape returned by the repository — restaurant and customer are optionally included

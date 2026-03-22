@@ -1,5 +1,5 @@
 import express from "express";
-import { Role } from "../generated/prisma/client.js";
+import { Role } from "../generated/prisma/index.js";
 import { reservationController } from "../controllers/index.js";
 import { requireAuth, requireRole, validate } from "../middlewares/index.js";
 import {

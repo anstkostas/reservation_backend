@@ -1,4 +1,4 @@
-import type { Restaurant } from "../generated/prisma/client.js";
+import type { Restaurant } from "../generated/prisma/index.js";
 
 export interface RestaurantOutput {
   id: string;

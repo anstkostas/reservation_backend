@@ -1,4 +1,4 @@
-import { Prisma } from "../generated/prisma/client.js";
+import { Prisma } from "../generated/prisma/index.js";
 import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
 
 /**

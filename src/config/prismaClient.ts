@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../generated/prisma/client.js";
+import { PrismaClient } from "../generated/prisma/index.js";
 import { DB_CONFIG } from "./env.js";
 
 // Cache the client on globalThis to prevent multiple instances during hot-reload in dev

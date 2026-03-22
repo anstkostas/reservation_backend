@@ -1,5 +1,5 @@
 import { prisma } from "../config/prismaClient.js";
-import { Prisma, Role } from "../generated/prisma/client.js";
+import { Prisma, Role } from "../generated/prisma/index.js";
 import {
   restaurantRepository,
   reservationRepository,
