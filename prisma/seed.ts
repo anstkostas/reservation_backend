@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Role, ReservationStatus } from "../src/generated/prisma/client.js";
+import { Role, ReservationStatus } from "../src/generated/prisma/index.js";
 import { prisma } from "../src/config/prismaClient.js";
 import { SALT_ROUNDS } from "../src/constants/index.js";
 
