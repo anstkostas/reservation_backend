@@ -1,6 +1,6 @@
 import { prisma } from "../config/prismaClient.js";
 import { Prisma, type Reservation, type ReservationStatus } from "../generated/prisma/index.js";
-import { PRISMA_ERROR_CODES } from "../constants/index.js";
+import { PRISMA_ERROR_CODES, RESERVATION_BUFFER_HOURS } from "../constants/index.js";
 import type { ReservationWithRelations } from "../dtos/reservationDTO.js";
 
 interface ReservationFilter {
@@ -41,7 +41,7 @@ export const reservationRepository = {
    * Finds all reservations matching the given filter, with restaurant and customer joined.
    *
    * @param {ReservationFilter} [filter={}] - Optional filter: restaurantId, customerId, status
-   * @returns {Promise<ReservationWithRelations[]>} Reservations ordered by date/time descending
+   * @returns {Promise<ReservationWithRelations[]>} Reservations ordered by scheduledAt descending
    */
   async findAll(filter: ReservationFilter = {}): Promise<ReservationWithRelations[]> {
     const where: Prisma.ReservationWhereInput = {};
@@ -57,7 +57,7 @@ export const reservationRepository = {
           select: { id: true, firstname: true, lastname: true, email: true },
         },
       },
-      orderBy: [{ date: "desc" }, { time: "desc" }],
+      orderBy: { scheduledAt: "desc" },
     });
 
     // cast is safe — the include clause above guarantees restaurant and customer are present
@@ -130,28 +130,23 @@ export const reservationRepository = {
   },
 
   /**
-   * Counts active reservations for a specific restaurant, date, and time slot.
+   * Counts active reservations for a specific restaurant and time slot.
    * Used to check capacity before creating or updating a reservation.
    *
-   * Always uses $queryRaw for reliable TIME column comparison via PostgreSQL casting.
-   * When called within a transaction (tx provided), appends FOR UPDATE to lock the
-   * matching rows and prevent race conditions on concurrent bookings.
+   * Always uses $queryRaw for the FOR UPDATE row lock — Prisma's findMany does not support it.
+   * When called within a transaction (tx provided), the lock prevents overbooking race conditions.
    *
    * @param {string} restaurantId - Restaurant UUID
-   * @param {Date} date - Reservation date
-   * @param {string} time - Reservation time in HH:MM format
-   * @param {TxClient} [tx] - Prisma transaction client — pass when inside a capacity-check transaction
+   * @param {Date} scheduledAt - Combined reservation datetime
+   * @param {Prisma.TransactionClient} [tx] - Prisma transaction client — pass when inside a capacity-check transaction
    * @returns {Promise<number>} Count of active reservations for that slot
    */
   async countActiveBySlot(
     restaurantId: string,
-    date: Date,
-    time: string,
+    scheduledAt: Date,
     tx?: Prisma.TransactionClient
   ): Promise<number> {
     const client = tx ?? prisma;
-    // PostgreSQL TIME cast requires HH:MM:SS — append seconds to the HH:MM string from Zod
-    const timeWithSeconds = `${time}:00`;
     // FOR UPDATE is appended only inside a transaction to prevent overbooking race conditions;
     // Prisma.raw injects the clause as a literal SQL fragment (not a parameter)
     const lockClause = tx ? Prisma.raw("FOR UPDATE") : Prisma.raw("");
@@ -163,12 +158,44 @@ export const reservationRepository = {
         SELECT id
         FROM "Reservations"
         WHERE "restaurantId" = ${restaurantId}::uuid
-          AND date = ${date}::date
-          AND time = ${timeWithSeconds}::time
+          AND "scheduledAt" = ${scheduledAt}::timestamp
           AND status = 'active'::"ReservationStatus"
         ${lockClause}
       ) AS locked
     `;
     return Number(result[0].count);
+  },
+
+  /**
+   * Finds any active reservation for a customer whose scheduledAt falls within
+   * RESERVATION_BUFFER_HOURS before or after the requested time.
+   *
+   * Used to enforce the per-customer 4-hour conflict rule: a customer cannot have
+   * two active reservations within 4 hours of each other, regardless of restaurant.
+   *
+   * @param {string} customerId - Customer UUID
+   * @param {Date} scheduledAt - The requested reservation datetime
+   * @param {Prisma.TransactionClient} [tx] - Transaction client — must be forwarded to avoid stale reads
+   * @param {string} [excludeId] - Reservation ID to exclude (pass the existing ID on update so it doesn't conflict with itself)
+   * @returns {Promise<Reservation | null>} The conflicting reservation, or null if none found
+   */
+  async findActiveByCustomerInWindow(
+    customerId: string,
+    scheduledAt: Date,
+    tx?: Prisma.TransactionClient,
+    excludeId?: string
+  ): Promise<Reservation | null> {
+    const client = tx ?? prisma;
+    const windowMs = RESERVATION_BUFFER_HOURS * 60 * 60 * 1000;
+    const windowStart = new Date(scheduledAt.getTime() - windowMs);
+    const windowEnd = new Date(scheduledAt.getTime() + windowMs);
+    return client.reservation.findFirst({
+      where: {
+        customerId,
+        status: "active",
+        scheduledAt: { gte: windowStart, lte: windowEnd },
+        ...(excludeId ? { id: { not: excludeId } } : {}),
+      },
+    });
   },
 };
