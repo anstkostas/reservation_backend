@@ -4,28 +4,17 @@ import { prisma } from "../src/config/prismaClient.js";
 import { SALT_ROUNDS } from "../src/constants/index.js";
 
 /**
- * Returns a random date within ±2 months of today, and whether it falls in the past.
+ * Returns a random scheduledAt within ±2 months of now, with a random
+ * hour between 15:00 and 23:00, and whether it falls in the past.
  */
-function getRandomDate(): { date: Date; inPast: boolean } {
-  const today = new Date();
+function getRandomScheduledAt(): { scheduledAt: Date; inPast: boolean } {
+  const now = new Date();
   const twoMonths = 60 * 24 * 60 * 60 * 1000;
   const randomOffset = Math.floor(Math.random() * (2 * twoMonths + 1)) - twoMonths;
-  const date = new Date(today.getTime() + randomOffset);
-  return { date, inPast: date < today };
-}
-
-/**
- * Returns a random time between 15:00 and 23:00 as a Date object.
- * Prisma maps @db.Time(6) to DateTime — only the time portion is stored.
- */
-function getRandomTime(): Date {
-  const middle = 19;
-  const range = 4;
-  const randomOffset = Math.floor(Math.random() * (2 * range + 1)) - range;
-  const hour = middle + randomOffset;
-  const date = new Date(0);
-  date.setUTCHours(hour, 0, 0, 0);
-  return date;
+  const scheduledAt = new Date(now.getTime() + randomOffset);
+  const hour = 19 + Math.floor(Math.random() * 9) - 4; // 15–23
+  scheduledAt.setHours(hour, 0, 0, 0);
+  return { scheduledAt, inPast: scheduledAt < now };
 }
 
 async function main(): Promise<void> {
@@ -71,10 +60,9 @@ async function main(): Promise<void> {
   const random = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
   const reservationData = Array.from({ length: 10 }, () => {
-    const { date, inPast } = getRandomDate();
+    const { scheduledAt, inPast } = getRandomScheduledAt();
     return {
-      date,
-      time: getRandomTime(),
+      scheduledAt,
       persons: Math.floor(Math.random() * 10) + 2,
       status: inPast
         ? Math.random() < 0.6
