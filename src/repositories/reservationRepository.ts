@@ -157,14 +157,19 @@ export const reservationRepository = {
     // FOR UPDATE is appended only inside a transaction to prevent overbooking race conditions;
     // Prisma.raw injects the clause as a literal SQL fragment (not a parameter)
     const lockClause = tx ? Prisma.raw("FOR UPDATE") : Prisma.raw("");
+    // COUNT(*) with FOR UPDATE in the same SELECT is rejected by PostgreSQL.
+    // Subquery pattern: FOR UPDATE locks the rows in the inner query; COUNT(*) on the outer result avoids the conflict.
     const result = await client.$queryRaw<[{ count: bigint }]>`
       SELECT COUNT(*)::bigint AS count
-      FROM "Reservations"
-      WHERE "restaurantId" = ${restaurantId}::uuid
-        AND date = ${date}::date
-        AND time = ${timeWithSeconds}::time
-        AND status = 'active'::"ReservationStatus"
-      ${lockClause}
+      FROM (
+        SELECT id
+        FROM "Reservations"
+        WHERE "restaurantId" = ${restaurantId}::uuid
+          AND date = ${date}::date
+          AND time = ${timeWithSeconds}::time
+          AND status = 'active'::"ReservationStatus"
+        ${lockClause}
+      ) AS locked
     `;
     return Number(result[0].count);
   },
