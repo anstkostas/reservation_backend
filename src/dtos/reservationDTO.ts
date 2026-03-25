@@ -11,6 +11,10 @@ export type ReservationWithRelations = Reservation & {
   customer?: Pick<User, "id" | "firstname" | "lastname" | "email"> | null;
 };
 
+/**
+ * Safe API output shape for a reservation.
+ * Flattens joined relations (restaurant name/address/phone, customer) into top-level fields.
+ */
 export interface ReservationOutput {
   id: string;
   scheduledAt: Date;

@@ -93,7 +93,7 @@ export const reservationService = {
    *
    * IMPORTANT:
    * - This method is TRANSACTIONAL.
-   * - When date or time changes, the capacity check and update happen atomically
+   * - When scheduledAt changes, all time-based checks and the update happen atomically
    *   to prevent race conditions on concurrent bookings for the same slot.
    *
    * Business rules enforced:
@@ -133,22 +133,24 @@ export const reservationService = {
 
       const newScheduledAt = data.scheduledAt ?? existing.scheduledAt;
 
-      validateReservationDateTime(newScheduledAt);
-
-      // Per-customer 4-hour conflict check — excludes this reservation so it doesn't conflict with itself
-      const conflictingReservation = await reservationRepository.findActiveByCustomerInWindow(
-        customer.id,
-        newScheduledAt,
-        tx,
-        existing.id
-      );
-      if (conflictingReservation) {
-        throw new ValidationError(
-          "You already have a reservation within 4 hours of this time"
-        );
-      }
-
       if (data.scheduledAt !== undefined) {
+        // All time-based checks are gated on scheduledAt actually changing —
+        // a persons-only update skips these entirely
+        validateReservationDateTime(newScheduledAt);
+
+        // Per-customer 4-hour conflict check — excludes this reservation so it doesn't conflict with itself
+        const conflictingReservation = await reservationRepository.findActiveByCustomerInWindow(
+          customer.id,
+          newScheduledAt,
+          tx,
+          existing.id
+        );
+        if (conflictingReservation) {
+          throw new ValidationError(
+            "You already have a reservation within 4 hours of this time"
+          );
+        }
+
         const restaurant = await restaurantRepository.findById(existing.restaurantId, tx);
         if (!restaurant) throw new NotFoundError("Restaurant not found");
 

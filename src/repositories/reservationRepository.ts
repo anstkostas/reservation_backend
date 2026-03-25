@@ -1,6 +1,6 @@
 import { prisma } from "../config/prismaClient.js";
 import { Prisma, type Reservation, type ReservationStatus } from "../generated/prisma/index.js";
-import { PRISMA_ERROR_CODES, RESERVATION_BUFFER_HOURS } from "../constants/index.js";
+import { PRISMA_ERROR_CODES, RESERVATION_BUFFER_HOURS, RESERVATION_STATUS } from "../constants/index.js";
 import type { ReservationWithRelations } from "../dtos/reservationDTO.js";
 
 interface ReservationFilter {
@@ -14,7 +14,7 @@ export const reservationRepository = {
    * Creates a new reservation record.
    *
    * @param {Prisma.ReservationCreateInput} data - Fields for the new reservation
-   * @param {TxClient} [tx] - Optional Prisma transaction client
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Reservation>} The created reservation
    */
   async create(
@@ -29,7 +29,7 @@ export const reservationRepository = {
    * Finds a single reservation by primary key.
    *
    * @param {string} id - Reservation UUID
-   * @param {TxClient} [tx] - Optional Prisma transaction client
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Reservation | null>} The reservation, or null if not found
    */
   async findById(id: string, tx?: Prisma.TransactionClient): Promise<Reservation | null> {
@@ -69,7 +69,7 @@ export const reservationRepository = {
    *
    * @param {string} id - Reservation UUID
    * @param {Prisma.ReservationUpdateInput} data - Fields to update
-   * @param {TxClient} [tx] - Optional Prisma transaction client — must be forwarded
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client — must be forwarded
    *   when called within a transaction to ensure the write is part of the same atomic operation
    * @returns {Promise<Reservation | null>} The updated reservation, or null if not found
    */
@@ -97,7 +97,7 @@ export const reservationRepository = {
    * Deletes a reservation by ID.
    *
    * @param {string} id - Reservation UUID
-   * @param {TxClient} [tx] - Optional Prisma transaction client
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Reservation | null>} The deleted reservation, or null if not found
    */
   async delete(id: string, tx?: Prisma.TransactionClient): Promise<Reservation | null> {
@@ -192,7 +192,7 @@ export const reservationRepository = {
     return client.reservation.findFirst({
       where: {
         customerId,
-        status: "active",
+        status: RESERVATION_STATUS.ACTIVE,
         scheduledAt: { gte: windowStart, lte: windowEnd },
         ...(excludeId ? { id: { not: excludeId } } : {}),
       },

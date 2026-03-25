@@ -34,4 +34,3 @@ export function validateReservationDateTime(scheduledAt: Date): void {
     throw new ValidationError("Reservation must be within 2 months from today");
   }
 }
-
