@@ -64,7 +64,7 @@ export const AUTH_CONFIG: AuthConfig = {
 };
 
 export const COOKIE_CONFIG: CookieConfig = {
-  NAME: process.env.COOKIE_NAME ?? "accessToken",
+  NAME: process.env.COOKIE_NAME || "accessToken",
   HTTP_ONLY: true,
   SECURE: ENV === "production",
   SAME_SITE: ENV === "production" ? "none" : "lax",
