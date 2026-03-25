@@ -4,7 +4,6 @@ import type {
   User,
   ReservationStatus,
 } from "../generated/prisma/index.js";
-import { normalizeDBTime } from "../utils/index.js";
 
 // Joined shape returned by the repository — restaurant and customer are optionally included
 export type ReservationWithRelations = Reservation & {
@@ -14,8 +13,7 @@ export type ReservationWithRelations = Reservation & {
 
 export interface ReservationOutput {
   id: string;
-  date: Date;
-  time: string;
+  scheduledAt: Date;
   persons: number;
   status: ReservationStatus;
   restaurantId: string;
@@ -28,7 +26,6 @@ export interface ReservationOutput {
 
 /**
  * Shapes a Reservation record (with optional joined relations) for API output.
- * Normalizes the DB time value to HH:mm format.
  *
  * @param {ReservationWithRelations} reservation - Reservation with optional restaurant and customer joins
  * @returns {ReservationOutput}
@@ -36,8 +33,7 @@ export interface ReservationOutput {
 export function reservationOutputDTO(reservation: ReservationWithRelations): ReservationOutput {
   return {
     id: reservation.id,
-    date: reservation.date,
-    time: normalizeDBTime(reservation.time),
+    scheduledAt: reservation.scheduledAt,
     persons: reservation.persons,
     status: reservation.status,
     restaurantId: reservation.restaurantId,
