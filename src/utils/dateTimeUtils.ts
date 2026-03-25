@@ -19,42 +19,34 @@ export function parseTimeString(time: string): Date {
 }
 
 /**
- * Validates that a reservation date + time represent a valid future datetime
- * within the allowed booking window.
+ * Validates that a reservation's scheduled datetime satisfies the booking window rules.
  *
  * Business rules enforced:
- * - Combined date and time must not be in the past
- * - Combined datetime must be within the next 2 months
+ * - scheduledAt must be at least 30 minutes from now (minimum preparation window)
+ * - scheduledAt must be within the next 2 months
  *
  * This function is a guard:
  * - It does not return a value
- * - It throws a ValidationError if the rules are violated
+ * - It throws a ValidationError if either rule is violated
  *
- * @param {Date|string} date - Reservation date (Date object or ISO-compatible string)
- * @param {string} time - Reservation time in HH:mm 24-hour format
+ * @param {Date} scheduledAt - Combined reservation datetime
  *
  * @throws {ValidationError}
  * Thrown when:
- * - The combined datetime is in the past
- * - The combined datetime exceeds the allowed booking window
+ * - scheduledAt is less than 30 minutes from now
+ * - scheduledAt exceeds the allowed booking window
  *
  * @example
- * validateReservationDateTime("2025-09-10", "18:30");
- *
- * @example
- * validateReservationDateTime(reservation.date, reservation.time);
+ * validateReservationDateTime(new Date(data.scheduledAt));
  */
-export function validateReservationDateTime(date: Date | string, time: string): void {
-  const [h, m] = time.split(":").map(Number);
-  const dt = new Date(date);
-  dt.setUTCHours(h, m, 0, 0);
-  const now = new Date();
-  if (dt < now) {
-    throw new ValidationError("Reservation datetime cannot be in the past");
+export function validateReservationDateTime(scheduledAt: Date): void {
+  const minTime = new Date(Date.now() + 30 * 60 * 1000); // 30-minute minimum lead time
+  if (scheduledAt < minTime) {
+    throw new ValidationError("Reservation must be at least 30 minutes from now");
   }
-  const twoMonthsFromNow = new Date();
-  twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + RESERVATION_BOOKING_WINDOW_MONTHS);
-  if (dt > twoMonthsFromNow) {
+  const maxTime = new Date();
+  maxTime.setMonth(maxTime.getMonth() + RESERVATION_BOOKING_WINDOW_MONTHS);
+  if (scheduledAt > maxTime) {
     throw new ValidationError("Reservation must be within 2 months from today");
   }
 }
