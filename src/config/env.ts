@@ -42,8 +42,7 @@ export const SERVER: ServerConfig = {
   PORT: Number(process.env.PORT) || 22000,
 };
 
-export const FRONTEND_SERVER: string =
-  process.env.FRONTEND_URL ?? "http://localhost:5173";
+export const FRONTEND_SERVER: string = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
 // DB_URL takes priority if present, otherwise use individual credentials (Render doesn't support env vars with multiple values, like DB_HOST, DB_PORT, etc.)
 export const DB_CONFIG: DbConfig = process.env.DB_URL

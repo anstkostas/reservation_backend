@@ -1,18 +1,8 @@
 import { prisma } from "../config/prismaClient.js";
 import { Prisma, Role } from "../generated/prisma/index.js";
-import {
-  restaurantRepository,
-  reservationRepository,
-} from "../repositories/index.js";
-import {
-  reservationOutputDTO,
-  type ReservationOutput,
-} from "../dtos/index.js";
-import {
-  validateReservationDateTime,
-  normalizeDBTime,
-  parseTimeString,
-} from "../utils/index.js";
+import { restaurantRepository, reservationRepository } from "../repositories/index.js";
+import { reservationOutputDTO, type ReservationOutput } from "../dtos/index.js";
+import { validateReservationDateTime, normalizeDBTime, parseTimeString } from "../utils/index.js";
 import { NotFoundError, ValidationError, ForbiddenError } from "../errors/index.js";
 import { RESERVATION_STATUS } from "../constants/index.js";
 import type {
@@ -137,10 +127,7 @@ export const reservationService = {
       validateReservationDateTime(newDate, newTime);
 
       if (data.date !== undefined || data.time !== undefined) {
-        const restaurant = await restaurantRepository.findById(
-          existing.restaurantId,
-          tx
-        );
+        const restaurant = await restaurantRepository.findById(existing.restaurantId, tx);
         if (!restaurant) throw new NotFoundError("Restaurant not found");
 
         const reservedTables = await reservationRepository.countActiveBySlot(
@@ -158,9 +145,7 @@ export const reservationService = {
         const effectiveReserved = isSameSlot ? reservedTables - 1 : reservedTables;
 
         if (effectiveReserved >= restaurant.capacity) {
-          throw new ValidationError(
-            "Restaurant is fully booked for the new time slot"
-          );
+          throw new ValidationError("Restaurant is fully booked for the new time slot");
         }
       }
 
@@ -185,10 +170,7 @@ export const reservationService = {
    * @throws {ForbiddenError} If the reservation belongs to another customer
    * @throws {ValidationError} If the reservation is not active
    */
-  async cancelReservation(
-    id: string,
-    customer: UserOutput
-  ): Promise<ReservationOutput> {
+  async cancelReservation(id: string, customer: UserOutput): Promise<ReservationOutput> {
     return prisma.$transaction(async (tx) => {
       const reservation = await reservationRepository.findById(id, tx);
       if (!reservation) throw new NotFoundError("Reservation not found");
@@ -202,9 +184,13 @@ export const reservationService = {
       }
 
       // Soft cancel — sets status to "canceled" instead of deleting the row
-      const updated = await reservationRepository.update(id, {
-        status: RESERVATION_STATUS.CANCELED,
-      }, tx);
+      const updated = await reservationRepository.update(
+        id,
+        {
+          status: RESERVATION_STATUS.CANCELED,
+        },
+        tx
+      );
       if (!updated) throw new NotFoundError("Reservation not found");
       return reservationOutputDTO(updated);
     });
@@ -227,9 +213,7 @@ export const reservationService = {
     user: UserOutput
   ): Promise<ReservationOutput> {
     if (user.role !== Role.owner) {
-      throw new ForbiddenError(
-        "Only owners can mark a reservation as completed or no-show"
-      );
+      throw new ForbiddenError("Only owners can mark a reservation as completed or no-show");
     }
 
     return prisma.$transaction(async (tx) => {
@@ -249,9 +233,7 @@ export const reservationService = {
 
       // Zod validates "no-show" (hyphen) but Prisma stores no_show (underscore) internally
       const prismaStatus =
-        status === "no-show"
-          ? RESERVATION_STATUS.NO_SHOW
-          : RESERVATION_STATUS.COMPLETED;
+        status === "no-show" ? RESERVATION_STATUS.NO_SHOW : RESERVATION_STATUS.COMPLETED;
 
       const updated = await reservationRepository.update(id, { status: prismaStatus }, tx);
       if (!updated) throw new NotFoundError("Reservation not found");

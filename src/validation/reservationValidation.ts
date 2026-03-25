@@ -16,10 +16,9 @@ export const updateReservationSchema = z
     persons: z.number().int().min(1).optional(),
   })
   // mirrors Joi's .min(1) — at least one field must be present
-  .refine(
-    (data) => Object.values(data).some((v) => v !== undefined),
-    { message: "At least one field must be provided" }
-  );
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    message: "At least one field must be provided",
+  });
 
 export const reservationStatusSchema = z.object({
   status: z.enum(["completed", "no-show"]),

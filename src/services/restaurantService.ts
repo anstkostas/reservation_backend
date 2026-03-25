@@ -1,8 +1,5 @@
 import { restaurantRepository } from "../repositories/index.js";
-import {
-  restaurantOutputDTO,
-  type RestaurantOutput,
-} from "../dtos/index.js";
+import { restaurantOutputDTO, type RestaurantOutput } from "../dtos/index.js";
 import { NotFoundError } from "../errors/index.js";
 
 export const restaurantService = {

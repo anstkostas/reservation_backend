@@ -51,7 +51,12 @@ export const reservationController = {
     try {
       const { id } = req.params as { id: string };
       const canceledReservation = await reservationService.cancelReservation(id, getAuthUser(req));
-      sendResponse(res, canceledReservation, HTTP_STATUS.OK, RESPONSE_MESSAGES.RESERVATION.CANCELED);
+      sendResponse(
+        res,
+        canceledReservation,
+        HTTP_STATUS.OK,
+        RESPONSE_MESSAGES.RESERVATION.CANCELED
+      );
     } catch (err) {
       next(err);
     }
@@ -64,7 +69,11 @@ export const reservationController = {
     try {
       const { id } = req.params as { id: string };
       const { status } = req.body as ReservationStatusInput;
-      const resolvedReservation = await reservationService.resolveReservation(id, status, getAuthUser(req));
+      const resolvedReservation = await reservationService.resolveReservation(
+        id,
+        status,
+        getAuthUser(req)
+      );
       const message =
         status === "completed"
           ? RESPONSE_MESSAGES.RESERVATION.COMPLETED

@@ -25,11 +25,7 @@ export function getAuthUser(req: Request): UserOutput {
  *
  * @throws {NotAuthenticatedError} If cookie is missing, token is absent/invalid/expired, or user no longer exists
  */
-export async function requireAuth(
-  req: Request,
-  _res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function requireAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   if (req.method === "OPTIONS") return next(); // allow CORS preflight requests through without auth
 
   try {

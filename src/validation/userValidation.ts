@@ -6,12 +6,22 @@ const passwordPattern =
 export const createUserSchema = z.object({
   // .transform() runs after validation — email is valid before it's lowercased
   email: z.email().transform((v) => v.trim().toLowerCase()),
-  password: z.string().regex(
-    passwordPattern,
-    "Password must be at least 8 characters, include uppercase, lowercase, number, and special character"
-  ),
-  firstname: z.string().min(2).max(50).transform((v) => v.trim()),
-  lastname: z.string().min(2).max(50).transform((v) => v.trim()),
+  password: z
+    .string()
+    .regex(
+      passwordPattern,
+      "Password must be at least 8 characters, include uppercase, lowercase, number, and special character"
+    ),
+  firstname: z
+    .string()
+    .min(2)
+    .max(50)
+    .transform((v) => v.trim()),
+  lastname: z
+    .string()
+    .min(2)
+    .max(50)
+    .transform((v) => v.trim()),
   role: z.enum(["owner", "customer"]),
   // empty string, null, or undefined → null; valid UUID passes through
   restaurantId: z

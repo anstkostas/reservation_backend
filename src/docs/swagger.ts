@@ -65,8 +65,7 @@ const swaggerSpec = swaggerJSDoc({
               enum: ["customer", "owner"],
             },
           },
-          description:
-            "User object returned by the API. Password is excluded for security.",
+          description: "User object returned by the API. Password is excluded for security.",
         },
         Reservation: {
           // reservationOutputDTO
@@ -210,7 +209,8 @@ const swaggerSpec = swaggerJSDoc({
             password: {
               type: "string",
               format: "password",
-              description: "Min 8 characters, must include uppercase, lowercase, number, and special character",
+              description:
+                "Min 8 characters, must include uppercase, lowercase, number, and special character",
               example: "StrongPassword123!",
             },
             role: {

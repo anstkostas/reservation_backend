@@ -23,7 +23,8 @@
     "start": "node dist/server.js",
     "start:prod": "NODE_ENV=production node dist/server.js",
     "lint": "eslint src",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write src"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
@@ -52,6 +53,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^10.1.0",
+    "prettier": "^3.8.1",
     "prisma": "^7.5.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

@@ -15,9 +15,7 @@ import { ForbiddenError } from "../errors/index.js";
 export function requireRole(requiredRole: Role): RequestHandler {
   return function roleMiddleware(req: Request, _res: Response, next: NextFunction): void {
     if (!req.user || req.user.role !== requiredRole) {
-      return next(
-        new ForbiddenError("You do not have permission to access this resource")
-      );
+      return next(new ForbiddenError("You do not have permission to access this resource"));
     }
     next();
   };

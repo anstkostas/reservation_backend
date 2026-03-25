@@ -29,11 +29,9 @@ export const authService = {
       throw new ValidationError("Invalid email or password");
     }
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      AUTH_CONFIG.JWT_SECRET,
-      { expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN as ms.StringValue }
-    );
+    const token = jwt.sign({ id: user.id, role: user.role }, AUTH_CONFIG.JWT_SECRET, {
+      expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN as ms.StringValue,
+    });
 
     return loginOutputDTO(user, token);
   },
@@ -49,11 +47,9 @@ export const authService = {
   async signup(data: CreateUserInput): Promise<LoginOutput> {
     const user = await userService.createUser(data);
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      AUTH_CONFIG.JWT_SECRET,
-      { expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN as ms.StringValue }
-    );
+    const token = jwt.sign({ id: user.id, role: user.role }, AUTH_CONFIG.JWT_SECRET, {
+      expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN as ms.StringValue,
+    });
 
     // userService.createUser returns UserOutput (password already stripped),
     // so we return the shape directly instead of passing through loginOutputDTO

@@ -1,4 +1,9 @@
-import type { Reservation, Restaurant, User, ReservationStatus } from "../generated/prisma/index.js";
+import type {
+  Reservation,
+  Restaurant,
+  User,
+  ReservationStatus,
+} from "../generated/prisma/index.js";
 import { normalizeDBTime } from "../utils/index.js";
 
 // Joined shape returned by the repository — restaurant and customer are optionally included
@@ -28,9 +33,7 @@ export interface ReservationOutput {
  * @param {ReservationWithRelations} reservation - Reservation with optional restaurant and customer joins
  * @returns {ReservationOutput}
  */
-export function reservationOutputDTO(
-  reservation: ReservationWithRelations
-): ReservationOutput {
+export function reservationOutputDTO(reservation: ReservationWithRelations): ReservationOutput {
   return {
     id: reservation.id,
     date: reservation.date,

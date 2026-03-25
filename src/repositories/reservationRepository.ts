@@ -43,9 +43,7 @@ export const reservationRepository = {
    * @param {ReservationFilter} [filter={}] - Optional filter: restaurantId, customerId, status
    * @returns {Promise<ReservationWithRelations[]>} Reservations ordered by date/time descending
    */
-  async findAll(
-    filter: ReservationFilter = {}
-  ): Promise<ReservationWithRelations[]> {
+  async findAll(filter: ReservationFilter = {}): Promise<ReservationWithRelations[]> {
     const where: Prisma.ReservationWhereInput = {};
     if (filter.restaurantId) where.restaurantId = filter.restaurantId;
     if (filter.customerId) where.customerId = filter.customerId;

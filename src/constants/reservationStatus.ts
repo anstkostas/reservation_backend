@@ -10,5 +10,4 @@ export const RESERVATION_STATUS = {
   NO_SHOW: ReservationStatus.no_show,
 } as const;
 
-export type ReservationStatusValue =
-  (typeof RESERVATION_STATUS)[keyof typeof RESERVATION_STATUS];
+export type ReservationStatusValue = (typeof RESERVATION_STATUS)[keyof typeof RESERVATION_STATUS];
