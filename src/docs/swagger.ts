@@ -75,15 +75,12 @@ const swaggerSpec = swaggerJSDoc({
               type: "string",
               format: "uuid",
             },
-            date: {
+            scheduledAt: {
               type: "string",
-              format: "date",
+              format: "date-time",
+              example: "2025-12-31T19:30:00.000Z",
             },
-            time: {
-              type: "string",
-              example: "19:30",
-            },
-            persons: {
+            people: {
               type: "integer",
               example: 2,
             },
@@ -248,19 +245,14 @@ const swaggerSpec = swaggerJSDoc({
         },
         CreateReservationInput: {
           type: "object",
-          required: ["date", "time"],
+          required: ["scheduledAt"],
           properties: {
-            date: {
+            scheduledAt: {
               type: "string",
-              format: "date",
-              example: "2025-12-31",
+              format: "date-time",
+              example: "2025-12-31T19:30:00.000Z",
             },
-            time: {
-              type: "string",
-              format: "time",
-              example: "19:30",
-            },
-            persons: {
+            people: {
               type: "integer",
               default: 1,
               example: 2,
@@ -268,29 +260,24 @@ const swaggerSpec = swaggerJSDoc({
           },
           additionalProperties: false,
           description:
-            "Input data for creating a reservation. Includes date, time, and optional number of persons. Status and customerId are assigned automatically.",
+            "Input data for creating a reservation. Requires a scheduledAt ISO datetime and an optional number of people. Status and customerId are assigned automatically.",
         },
         UpdateReservationInput: {
           type: "object",
           properties: {
-            date: {
+            scheduledAt: {
               type: "string",
-              format: "date",
-              example: "2025-12-31",
+              format: "date-time",
+              example: "2025-12-31T19:30:00.000Z",
             },
-            time: {
-              type: "string",
-              format: "time",
-              example: "19:30",
-            },
-            persons: {
+            people: {
               type: "integer",
               example: 2,
             },
           },
           additionalProperties: false,
           description:
-            "Input fields for updating a reservation. Only 'date', 'time', and 'persons' can be updated. At least one field must be provided.",
+            "Input fields for updating a reservation. Only 'scheduledAt' and 'people' can be updated. At least one field must be provided.",
         },
       },
     },

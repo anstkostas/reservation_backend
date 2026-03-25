@@ -18,7 +18,7 @@ export type ReservationWithRelations = Reservation & {
 export interface ReservationOutput {
   id: string;
   scheduledAt: Date;
-  persons: number;
+  people: number;
   status: ReservationStatus;
   restaurantId: string;
   restaurantName: string | undefined;
@@ -38,7 +38,7 @@ export function reservationOutputDTO(reservation: ReservationWithRelations): Res
   return {
     id: reservation.id,
     scheduledAt: reservation.scheduledAt,
-    persons: reservation.persons,
+    people: reservation.people,
     status: reservation.status,
     restaurantId: reservation.restaurantId,
     restaurantName: reservation.restaurant?.name,

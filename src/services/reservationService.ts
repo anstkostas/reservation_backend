@@ -77,7 +77,7 @@ export const reservationService = {
 
       const createInput: Prisma.ReservationCreateInput = {
         scheduledAt: data.scheduledAt,
-        persons: data.persons,
+        people: data.people,
         status: RESERVATION_STATUS.ACTIVE,
         restaurant: { connect: { id: restaurantId } },
         customer: { connect: { id: customer.id } },
@@ -135,7 +135,7 @@ export const reservationService = {
 
       if (data.scheduledAt !== undefined) {
         // All time-based checks are gated on scheduledAt actually changing —
-        // a persons-only update skips these entirely
+        // a people-only update skips these entirely
         validateReservationDateTime(newScheduledAt);
 
         // Per-customer 4-hour conflict check — excludes this reservation so it doesn't conflict with itself
@@ -172,7 +172,7 @@ export const reservationService = {
 
       const updatePayload: Prisma.ReservationUpdateInput = {};
       if (data.scheduledAt !== undefined) updatePayload.scheduledAt = data.scheduledAt;
-      if (data.persons !== undefined) updatePayload.persons = data.persons;
+      if (data.people !== undefined) updatePayload.people = data.people;
 
       const updated = await reservationRepository.update(id, updatePayload, tx);
       if (!updated) throw new NotFoundError("Reservation not found");

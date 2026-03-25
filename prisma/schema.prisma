@@ -53,7 +53,7 @@ model Reservation {
   // full timestamp of the reservation — date and time combined into one column
   scheduledAt DateTime
   // informational only — 1 reservation = 1 table slot regardless of party size
-  persons     Int               @default(1)
+  people      Int               @default(1)
   status       ReservationStatus @default(active)
   restaurantId String            @db.Uuid
   customerId   String            @db.Uuid

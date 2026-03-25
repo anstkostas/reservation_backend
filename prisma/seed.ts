@@ -63,7 +63,7 @@ async function main(): Promise<void> {
     const { scheduledAt, inPast } = getRandomScheduledAt();
     return {
       scheduledAt,
-      persons: Math.floor(Math.random() * 10) + 2,
+      people: Math.floor(Math.random() * 10) + 2,
       status: inPast
         ? Math.random() < 0.6
           ? ReservationStatus.completed

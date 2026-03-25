@@ -138,7 +138,7 @@ router.get(
  * /reservations/{id}:
  *   put:
  *     summary: Update an existing reservation
- *     description: Updates the date, time, or number of persons for an active reservation. Only the customer who owns the reservation can modify it.
+ *     description: Updates the scheduledAt datetime or number of people for an active reservation. Only the customer who owns the reservation can modify it.
  *     tags:
  *       - Reservations
  *     security:

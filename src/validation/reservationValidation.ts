@@ -3,13 +3,13 @@ import { z } from "zod";
 export const createReservationSchema = z.object({
   scheduledAt: z.coerce.date(),
   // default(1) — if omitted, one person is assumed; mirrors the old createReservationInputDTO default
-  persons: z.number().int().min(1).default(1),
+  people: z.number().int().min(1).default(1),
 });
 
 export const updateReservationSchema = z
   .object({
     scheduledAt: z.coerce.date().optional(),
-    persons: z.number().int().min(1).optional(),
+    people: z.number().int().min(1).optional(),
   })
   // mirrors Joi's .min(1) — at least one field must be present
   .refine((data) => Object.values(data).some((v) => v !== undefined), {
