@@ -2,7 +2,7 @@ import { prisma } from "../config/prismaClient.js";
 import { Prisma, Role } from "../generated/prisma/index.js";
 import { restaurantRepository, reservationRepository } from "../repositories/index.js";
 import { reservationOutputDTO, type ReservationOutput } from "../dtos/index.js";
-import { validateReservationDateTime, normalizeDBTime, parseTimeString } from "../utils/index.js";
+import { validateReservationDateTime } from "../utils/index.js";
 import { NotFoundError, ValidationError, ForbiddenError } from "../errors/index.js";
 import { RESERVATION_STATUS } from "../constants/index.js";
 import type {
@@ -23,7 +23,8 @@ export const reservationService = {
    *
    * Business rules enforced:
    * - Only customers can create reservations.
-   * - Reservation date and time are validated (not in the past, within allowed range of two months).
+   * - scheduledAt must be at least 30 minutes from now and within 2 months.
+   * - Customer cannot have another active reservation within 4 hours of the requested time.
    * - Overbooking prevention: active reservations for the same slot cannot exceed capacity.
    * - Status is set to "active" on creation.
    *
@@ -44,18 +45,29 @@ export const reservationService = {
       throw new ForbiddenError("Only customers can make reservations");
 
     // Validate before entering the transaction — pure check, no DB access needed
-    validateReservationDateTime(data.date, data.time);
+    validateReservationDateTime(data.scheduledAt);
 
     return prisma.$transaction(async (tx) => {
       const restaurant = await restaurantRepository.findById(restaurantId, tx);
       if (!restaurant) throw new NotFoundError("Restaurant not found");
 
+      // Per-customer 4-hour conflict check — runs inside the transaction to avoid stale reads
+      const conflictingReservation = await reservationRepository.findActiveByCustomerInWindow(
+        customer.id,
+        data.scheduledAt,
+        tx
+      );
+      if (conflictingReservation) {
+        throw new ValidationError(
+          "You already have a reservation within 4 hours of this time"
+        );
+      }
+
       // countActiveBySlot appends FOR UPDATE when tx is provided — locks matched rows
       // to prevent overbooking race conditions on concurrent bookings for the same slot
       const reservedTables = await reservationRepository.countActiveBySlot(
         restaurantId,
-        data.date,
-        data.time,
+        data.scheduledAt,
         tx
       );
 
@@ -64,8 +76,7 @@ export const reservationService = {
       }
 
       const createInput: Prisma.ReservationCreateInput = {
-        date: data.date,
-        time: parseTimeString(data.time),
+        scheduledAt: data.scheduledAt,
         persons: data.persons,
         status: RESERVATION_STATUS.ACTIVE,
         restaurant: { connect: { id: restaurantId } },
@@ -88,7 +99,8 @@ export const reservationService = {
    * Business rules enforced:
    * - Only customers can update their own reservations.
    * - Only active reservations can be modified.
-   * - Reservation date/time are validated if updated.
+   * - scheduledAt must be at least 30 minutes from now and within 2 months (if changed).
+   * - Customer cannot have another active reservation within 4 hours of the new time.
    * - Overbooking prevention: active reservations for the new slot cannot exceed capacity.
    *
    * @param {string} id - Reservation UUID
@@ -119,29 +131,36 @@ export const reservationService = {
         throw new ValidationError("Only active reservations can be modified");
       }
 
-      const newDate = data.date ?? existing.date;
-      // normalizeDBTime converts Prisma's DATE-typed time column to HH:MM string,
-      // matching the shape that Zod validation and countActiveBySlot both expect
-      const newTime = data.time ?? normalizeDBTime(existing.time);
+      const newScheduledAt = data.scheduledAt ?? existing.scheduledAt;
 
-      validateReservationDateTime(newDate, newTime);
+      validateReservationDateTime(newScheduledAt);
 
-      if (data.date !== undefined || data.time !== undefined) {
+      // Per-customer 4-hour conflict check — excludes this reservation so it doesn't conflict with itself
+      const conflictingReservation = await reservationRepository.findActiveByCustomerInWindow(
+        customer.id,
+        newScheduledAt,
+        tx,
+        existing.id
+      );
+      if (conflictingReservation) {
+        throw new ValidationError(
+          "You already have a reservation within 4 hours of this time"
+        );
+      }
+
+      if (data.scheduledAt !== undefined) {
         const restaurant = await restaurantRepository.findById(existing.restaurantId, tx);
         if (!restaurant) throw new NotFoundError("Restaurant not found");
 
         const reservedTables = await reservationRepository.countActiveBySlot(
           existing.restaurantId,
-          newDate,
-          newTime,
+          newScheduledAt,
           tx
         );
 
-        // If the customer is moving to a slot they already occupy, their current
+        // If the customer is moving to the same slot they already occupy, their current
         // reservation would be counted — subtract 1 to avoid false overbooking
-        const isSameSlot =
-          existing.date.getTime() === newDate.getTime() &&
-          normalizeDBTime(existing.time) === newTime;
+        const isSameSlot = existing.scheduledAt.getTime() === newScheduledAt.getTime();
         const effectiveReserved = isSameSlot ? reservedTables - 1 : reservedTables;
 
         if (effectiveReserved >= restaurant.capacity) {
@@ -150,8 +169,7 @@ export const reservationService = {
       }
 
       const updatePayload: Prisma.ReservationUpdateInput = {};
-      if (data.date !== undefined) updatePayload.date = data.date;
-      if (data.time !== undefined) updatePayload.time = parseTimeString(data.time);
+      if (data.scheduledAt !== undefined) updatePayload.scheduledAt = data.scheduledAt;
       if (data.persons !== undefined) updatePayload.persons = data.persons;
 
       const updated = await reservationRepository.update(id, updatePayload, tx);
