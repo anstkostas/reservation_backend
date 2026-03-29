@@ -3,11 +3,7 @@ import { SERVER } from "./config/env.js";
 import { prisma } from "./config/prismaClient.js";
 
 async function startServer(): Promise<void> {
-  if (!process.env.JWT_SECRET) {
-    console.error("[LOG] server.startServer: JWT_SECRET is not configured — aborting");
-    process.exit(1);
-  }
-
+  // JWT_SECRET is validated at module init in config/env.ts — no guard needed here
   try {
     await prisma.$connect();
     console.log("[LOG] server.startServer: Database connected");

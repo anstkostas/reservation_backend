@@ -1,9 +1,16 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../config/prismaClient.js";
+import { type Role } from "../generated/prisma/index.js";
 import { NotAuthenticatedError } from "../errors/index.js";
 import { AUTH_CONFIG, COOKIE_CONFIG } from "../config/env.js";
 import { userOutputDTO, type UserOutput } from "../dtos/index.js";
+
+/** Shape of the JWT payload signed by authService */
+interface JwtPayloadWithId extends jwt.JwtPayload {
+  id: string;
+  role: Role;
+}
 
 /**
  * Returns the authenticated user from the request, or throws NotAuthenticatedError.
@@ -38,9 +45,9 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
       return next(new NotAuthenticatedError("No authentication token provided"));
     }
 
-    // cast is safe — we control the payload shape when signing
-    const payload = jwt.verify(token, AUTH_CONFIG.JWT_SECRET) as jwt.JwtPayload;
-    const userId = payload["id"] as string;
+    // cast is safe — we control the payload shape when signing (see JwtPayloadWithId above)
+    const payload = jwt.verify(token, AUTH_CONFIG.JWT_SECRET) as JwtPayloadWithId;
+    const userId = payload.id;
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {

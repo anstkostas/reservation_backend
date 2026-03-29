@@ -237,7 +237,7 @@ export const reservationService = {
     }
 
     return prisma.$transaction(async (tx) => {
-      const restaurant = await restaurantRepository.findByOwnerId(user.id);
+      const restaurant = await restaurantRepository.findByOwnerId(user.id, tx);
       if (!restaurant) throw new ValidationError("Owner has no assigned restaurant");
 
       const reservation = await reservationRepository.findById(id, tx);

@@ -22,7 +22,8 @@ export const createUserSchema = z.object({
     .min(2)
     .max(50)
     .transform((v) => v.trim()),
-  role: z.enum(["owner", "customer"]),
+  // role is intentionally NOT in this schema — it is derived server-side from restaurantId.
+  // The frontend may send it for UX purposes; Zod strips unknown fields silently.
   // empty string, null, or undefined → null; valid UUID passes through
   restaurantId: z
     .uuid()

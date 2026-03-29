@@ -57,8 +57,13 @@ export const DB_CONFIG: DbConfig = process.env.DB_URL
     };
 
 export const AUTH_CONFIG: AuthConfig = {
-  // Cast is safe — server.ts validates JWT_SECRET is present before the app starts
-  JWT_SECRET: process.env.JWT_SECRET as string,
+  // Throws at module init if JWT_SECRET is not set — ESM imports are hoisted so this
+  // runs before any route handler or server logic can be reached
+  JWT_SECRET:
+    process.env.JWT_SECRET ??
+    (() => {
+      throw new Error("JWT_SECRET is not configured — aborting");
+    })(),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "2h",
 };
 

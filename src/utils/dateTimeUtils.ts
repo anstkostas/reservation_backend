@@ -31,6 +31,8 @@ export function validateReservationDateTime(scheduledAt: Date): void {
   const maxTime = new Date();
   maxTime.setMonth(maxTime.getMonth() + RESERVATION_BOOKING_WINDOW_MONTHS);
   if (scheduledAt > maxTime) {
-    throw new ValidationError("Reservation must be within 2 months from today");
+    throw new ValidationError(
+      `Reservation must be within ${RESERVATION_BOOKING_WINDOW_MONTHS} months from today`
+    );
   }
 }

@@ -7,7 +7,7 @@ export const restaurantRepository = {
    * Finds a single restaurant by primary key.
    *
    * @param {string} id - Restaurant UUID
-   * @param {TxClient} [tx] - Optional Prisma transaction client
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Restaurant | null>} The restaurant, or null if not found
    */
   async findById(id: string, tx?: Prisma.TransactionClient): Promise<Restaurant | null> {
@@ -37,11 +37,13 @@ export const restaurantRepository = {
    * Finds the restaurant owned by a specific user.
    *
    * @param {string} ownerId - Owner's user UUID
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Restaurant | null>} The restaurant, or null if none found
    */
-  async findByOwnerId(ownerId: string): Promise<Restaurant | null> {
+  async findByOwnerId(ownerId: string, tx?: Prisma.TransactionClient): Promise<Restaurant | null> {
+    const client = tx ?? prisma;
     // ownerId is @unique on Restaurant — findUnique is safe here
-    return prisma.restaurant.findUnique({ where: { ownerId } });
+    return client.restaurant.findUnique({ where: { ownerId } });
   },
 
   /**
@@ -49,7 +51,7 @@ export const restaurantRepository = {
    *
    * @param {string} id - Restaurant UUID
    * @param {string} ownerId - User UUID to assign as owner
-   * @param {TxClient} [tx] - Optional Prisma transaction client
+   * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Restaurant | null>} The updated restaurant, or null if not found
    */
   async assignOwner(

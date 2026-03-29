@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from "express";
+import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
@@ -6,6 +6,7 @@ import swaggerSpec from "./docs/swagger.js";
 import { FRONTEND_SERVER } from "./config/env.js";
 import { registerRoutes } from "./routes/index.js";
 import { globalErrorHandler } from "./middlewares/index.js";
+import { NotFoundError } from "./errors/index.js";
 
 const app = express();
 
@@ -35,12 +36,9 @@ registerRoutes(app);
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// 404
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-  });
+// 404 — route through globalErrorHandler for consistent error format
+app.use((_req: Request, _res: Response, next: NextFunction) => {
+  next(new NotFoundError("Route not found"));
 });
 
 app.use(globalErrorHandler);
