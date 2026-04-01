@@ -135,12 +135,6 @@ const swaggerSpec = swaggerJSDoc({
             description: {
               type: "string",
             },
-            address: {
-              type: "string",
-            },
-            phone: {
-              type: "string",
-            },
             capacity: {
               type: "integer",
             },
@@ -156,6 +150,8 @@ const swaggerSpec = swaggerJSDoc({
               nullable: true,
             },
           },
+          description:
+            "Restaurant object returned by the API. address and phone are intentionally omitted — restaurantOutputDTO excludes them as the frontend does not use either field.",
         },
         ErrorResponse: {
           type: "object",
@@ -184,17 +180,17 @@ const swaggerSpec = swaggerJSDoc({
         },
         SignupInput: {
           type: "object",
-          required: ["email", "password", "firstname", "lastname", "role"],
+          required: ["email", "password", "firstname", "lastname"],
           properties: {
             firstname: {
               type: "string",
-              minLength: 4,
+              minLength: 2,
               maxLength: 50,
               example: "John",
             },
             lastname: {
               type: "string",
-              minLength: 4,
+              minLength: 2,
               maxLength: 50,
               example: "Doe",
             },
@@ -210,20 +206,17 @@ const swaggerSpec = swaggerJSDoc({
                 "Min 8 characters, must include uppercase, lowercase, number, and special character",
               example: "StrongPassword123!",
             },
-            role: {
-              type: "string",
-              enum: ["customer", "owner"],
-            },
             restaurantId: {
               type: "string",
               format: "uuid",
               nullable: true,
-              description: "Required when role is 'owner' — the restaurant to claim",
+              description:
+                "Optional. If provided, the account is created as owner of that restaurant. Role is derived server-side — never send a role field.",
               example: null,
             },
           },
           description:
-            "Data required to create a new user account. For owners, restaurantId must reference an existing unowned restaurant.",
+            "Data required to create a new user account. Role is determined server-side from restaurantId — do not send a role field.",
         },
         LoginInput: {
           type: "object",

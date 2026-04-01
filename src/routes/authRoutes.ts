@@ -124,10 +124,7 @@ router.post("/signup", validate(createUserSchema), authController.signup);
  *                   type: boolean
  *                   example: true
  *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
+ *                   $ref: '#/components/schemas/User'
  *                 message:
  *                   type: string
  *                   example: Request successful
