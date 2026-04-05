@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./docs/swagger.js";
-import { FRONTEND_SERVER } from "./config/env.js";
+import { REACT_CLIENT_URL, FLUTTER_CLIENT_URL } from "./config/env.js";
 import { registerRoutes } from "./routes/index.js";
 import { globalErrorHandler } from "./middlewares/index.js";
 import { NotFoundError } from "./errors/index.js";
@@ -27,7 +27,7 @@ app.set("trust proxy", 1);
 
 app.use(
   cors({
-    origin: FRONTEND_SERVER,
+    origin: [REACT_CLIENT_URL, FLUTTER_CLIENT_URL],
     credentials: true,
   })
 );
