@@ -30,7 +30,7 @@ export const userService = {
    * Business rules enforced:
    * - Email must be unique
    * - Password is hashed before persistence
-   * - Role is derived from restaurantId: present → owner, absent → customer
+   * - Role comes from the validated request payload ('customer' | 'owner')
    * - Owners must claim an existing, unowned restaurant
    *
    * @param {CreateUserInput} data - Validated and sanitized signup input (from Zod)
@@ -39,15 +39,14 @@ export const userService = {
    * @throws {NotFoundError} If the claimed restaurant does not exist
    */
   async createUser(data: CreateUserInput): Promise<UserOutput> {
-    const { email, password, firstname, lastname, restaurantId } = data;
+    const { email, password, firstname, lastname, role: roleInput, restaurantId } = data;
 
     const exists = await userRepository.findByEmail(email);
     if (exists) {
       throw new ValidationError("Email already in use");
     }
 
-    // Role is derived server-side — if a restaurantId is provided the user is an owner
-    const role = restaurantId ? Role.owner : Role.customer;
+    const role = roleInput === "owner" ? Role.owner : Role.customer;
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     // prisma.$transaction rolls back automatically if the callback throws

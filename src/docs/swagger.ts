@@ -180,7 +180,7 @@ const swaggerSpec = swaggerJSDoc({
         },
         SignupInput: {
           type: "object",
-          required: ["email", "password", "firstname", "lastname"],
+          required: ["email", "password", "firstname", "lastname", "role"],
           properties: {
             firstname: {
               type: "string",
@@ -206,17 +206,21 @@ const swaggerSpec = swaggerJSDoc({
                 "Min 8 characters, must include uppercase, lowercase, number, and special character",
               example: "StrongPassword123!",
             },
+            role: {
+              type: "string",
+              enum: ["customer", "owner"],
+              description: "User role. 'owner' requires a restaurantId.",
+              example: "customer",
+            },
             restaurantId: {
               type: "string",
               format: "uuid",
               nullable: true,
-              description:
-                "Optional. If provided, the account is created as owner of that restaurant. Role is derived server-side — never send a role field.",
+              description: "Required when role is 'owner' — the restaurant this account will claim.",
               example: null,
             },
           },
-          description:
-            "Data required to create a new user account. Role is determined server-side from restaurantId — do not send a role field.",
+          description: "Data required to create a new user account.",
         },
         LoginInput: {
           type: "object",
