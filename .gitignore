@@ -30,3 +30,5 @@ desktop.ini
 .idea/
 
 /src/generated/prisma
+
+coverage/
