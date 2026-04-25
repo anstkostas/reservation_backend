@@ -34,9 +34,8 @@ CREATE TABLE "Restaurants" (
 -- CreateTable
 CREATE TABLE "Reservations" (
     "id" UUID NOT NULL,
-    "date" DATE NOT NULL,
-    "time" TIME(6) NOT NULL,
-    "persons" INTEGER NOT NULL DEFAULT 1,
+    "scheduledAt" TIMESTAMP(3) NOT NULL,
+    "people" INTEGER NOT NULL DEFAULT 1,
     "status" "ReservationStatus" NOT NULL DEFAULT 'active',
     "restaurantId" UUID NOT NULL,
     "customerId" UUID NOT NULL,
