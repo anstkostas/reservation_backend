@@ -16,3 +16,19 @@ export function makeJwt(id: string, role: "customer" | "owner"): string {
     expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN as ms.StringValue,
   });
 }
+
+/**
+ * Creates an already-expired JWT — used to test the TokenExpiredError path in
+ * requireAuth. Embedding exp as a past timestamp is reliable; expiresIn: '1ms'
+ * would create a flaky timing dependency.
+ *
+ * @param id - User ID to embed in the token payload
+ * @param role - Role to embed in the token payload
+ * @returns Signed JWT string that is already expired
+ */
+export function makeExpiredJwt(id: string, role: "customer" | "owner"): string {
+  return jwt.sign(
+    { id, role, exp: Math.floor(Date.now() / 1000) - 10 },
+    AUTH_CONFIG.JWT_SECRET
+  );
+}

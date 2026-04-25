@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import type { User } from "../../generated/prisma/index.js";
 import app from "../../app.js";
@@ -6,7 +6,7 @@ import { testPrisma } from "../helpers/testPrismaClient.js";
 import { testSeeds } from "../helpers/seeds.js";
 import { COOKIE_CONFIG } from "../../config/env.js";
 import { HTTP_STATUS } from "../../constants/index.js";
-import { makeJwt } from "../helpers/testUtils.js";
+import { makeJwt, makeExpiredJwt } from "../helpers/testUtils.js";
 
 // Matches testSeeds.createUser default — used in login test request bodies
 const TEST_PASSWORD = "Test@1234";
@@ -191,5 +191,116 @@ describe("role enforcement", () => {
       .set("Cookie", `${COOKIE_CONFIG.NAME}=${token}`);
 
     expect(res.status).toBe(HTTP_STATUS.FORBIDDEN);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// requireAuth middleware edge cases
+// ---------------------------------------------------------------------------
+
+describe("requireAuth middleware edge cases", () => {
+  it("responds 401 for an expired token", async () => {
+    // exp set 10s in the past — token is already expired at verify time,
+    // no flaky timing dependency on expiresIn
+    const expiredToken = makeExpiredJwt("any-id", "customer");
+
+    const res = await request(app)
+      .get("/api/auth/me")
+      .set("Cookie", `${COOKIE_CONFIG.NAME}=${expiredToken}`);
+
+    expect(res.status).toBe(HTTP_STATUS.NOT_AUTHENTICATED);
+    expect(res.body.message).toBe("Token expired");
+  });
+
+  it("responds 401 for a tampered (invalid) token", async () => {
+    const res = await request(app)
+      .get("/api/auth/me")
+      .set("Cookie", `${COOKIE_CONFIG.NAME}=this.is.not.a.valid.jwt`);
+
+    expect(res.status).toBe(HTTP_STATUS.NOT_AUTHENTICATED);
+    expect(res.body.message).toBe("Invalid token");
+  });
+
+  it("responds 401 when the token is valid but the user has been deleted", async () => {
+    // Simulates a token that was valid at issue time but the account no longer
+    // exists — only reachable by deleting the user directly, bypassing the service
+    const user = await testSeeds.createUser();
+    const token = makeJwt(user.id, "customer");
+    await testPrisma.user.delete({ where: { id: user.id } });
+
+    const res = await request(app)
+      .get("/api/auth/me")
+      .set("Cookie", `${COOKIE_CONFIG.NAME}=${token}`);
+
+    expect(res.status).toBe(HTTP_STATUS.NOT_AUTHENTICATED);
+    expect(res.body.message).toBe("User not found");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/auth/signup — owner validation
+// ---------------------------------------------------------------------------
+
+describe("POST /api/auth/signup — owner validation", () => {
+  let ownedRestaurantId: string;
+  const OWNER_SIGNUP_EMAIL = "owner-test@signup-test.com";
+
+  beforeAll(async () => {
+    const restaurant = await testSeeds.createRestaurant();
+    const existingOwner = await testSeeds.createUser({
+      email: "existing-owner@signup-test.com",
+      role: "owner",
+    });
+    await testPrisma.restaurant.update({
+      where: { id: restaurant.id },
+      data: { owner: { connect: { id: existingOwner.id } } },
+    });
+    ownedRestaurantId = restaurant.id;
+  });
+
+  afterAll(async () => {
+    // Delete restaurant before owner — FK is on Restaurant.ownerId → User.id,
+    // so the restaurant must be removed first to avoid a constraint violation
+    await testPrisma.restaurant.delete({ where: { id: ownedRestaurantId } });
+    await testPrisma.user.deleteMany({
+      where: {
+        email: { in: ["existing-owner@signup-test.com", OWNER_SIGNUP_EMAIL] },
+      },
+    });
+  });
+
+  afterEach(async () => {
+    await testPrisma.user.deleteMany({ where: { email: OWNER_SIGNUP_EMAIL } });
+  });
+
+  it("responds 404 when signing up as owner with a non-existent restaurantId", async () => {
+    const res = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        email: OWNER_SIGNUP_EMAIL,
+        password: "Signup123!A",
+        firstname: "Owner",
+        lastname: "Test",
+        role: "owner",
+        restaurantId: "00000000-0000-0000-0000-000000000000",
+      });
+
+    expect(res.status).toBe(HTTP_STATUS.NOT_FOUND);
+  });
+
+  it("responds 400 when signing up as owner claiming an already-owned restaurant", async () => {
+    const res = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        email: OWNER_SIGNUP_EMAIL,
+        password: "Signup123!A",
+        firstname: "Owner",
+        lastname: "Test",
+        role: "owner",
+        restaurantId: ownedRestaurantId,
+      });
+
+    expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
+    expect(res.body.message).toBe("Restaurant already has an owner");
   });
 });

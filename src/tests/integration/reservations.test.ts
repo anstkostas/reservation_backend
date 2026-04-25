@@ -12,7 +12,6 @@ let customer2Id: string;
 let ownerId: string;
 let restaurantId: string;
 let customerToken: string;
-let customer2Token: string;
 let ownerToken: string;
 
 describe("Reservation integration tests", () => {
@@ -31,7 +30,6 @@ describe("Reservation integration tests", () => {
       role: "customer",
     });
     customer2Id = customer2.id;
-    customer2Token = makeJwt(customer2Id, "customer");
 
     const owner = await testSeeds.createUser({
       email: "owner@res-test.com",
@@ -103,6 +101,18 @@ describe("Reservation integration tests", () => {
 
     // customer3 is not in the shared beforeAll users — clean up explicitly
     await testPrisma.user.delete({ where: { id: customer3.id } });
+  });
+
+  it("rejects a reservation scheduled less than 30 minutes from now", async () => {
+    const tooSoon = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+    const res = await request(app)
+      .post(`/api/reservations/restaurants/${restaurantId}`)
+      .set("Cookie", `${COOKIE_CONFIG.NAME}=${customerToken}`)
+      .send({ scheduledAt: tooSoon.toISOString(), people: 2 });
+
+    expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
+    expect(res.body.message).toMatch(/30 minutes/);
   });
 
   it("rejects a reservation more than 2 months in advance", async () => {
