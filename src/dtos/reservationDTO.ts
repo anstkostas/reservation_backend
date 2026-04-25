@@ -2,8 +2,15 @@ import type {
   Reservation,
   Restaurant,
   User,
-  ReservationStatus,
 } from "../generated/prisma/index.js";
+
+/**
+ * API-facing reservation status.
+ * Uses "no-show" (hyphen) instead of Prisma's internal "no_show" (underscore).
+ * The @map("no-show") in the Prisma schema only affects DB storage — the TS
+ * runtime value remains "no_show", so the DTO is responsible for the mapping.
+ */
+export type ReservationStatus = "active" | "canceled" | "completed" | "no-show";
 
 // Joined shape returned by the repository — restaurant and customer are optionally included
 export type ReservationWithRelations = Reservation & {
@@ -39,7 +46,7 @@ export function reservationOutputDTO(reservation: ReservationWithRelations): Res
     id: reservation.id,
     scheduledAt: reservation.scheduledAt,
     people: reservation.people,
-    status: reservation.status,
+    status: reservation.status === "no_show" ? "no-show" : reservation.status,
     restaurantId: reservation.restaurantId,
     restaurantName: reservation.restaurant?.name,
     restaurantAddress: reservation.restaurant?.address,
