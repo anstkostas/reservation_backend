@@ -1,24 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import request from "supertest";
-import jwt from "jsonwebtoken";
-import type ms from "ms";
 import type { User } from "../../generated/prisma/index.js";
 import app from "../../app.js";
 import { testPrisma } from "../helpers/testPrismaClient.js";
 import { testSeeds } from "../helpers/seeds.js";
-import { AUTH_CONFIG, COOKIE_CONFIG } from "../../config/env.js";
+import { COOKIE_CONFIG } from "../../config/env.js";
 import { HTTP_STATUS } from "../../constants/index.js";
-
-/**
- * Creates a signed JWT the same way authService does — lets tests call protected
- * routes without a full login round-trip in beforeEach.
- * requireAuth accepts it because it uses the same JWT_SECRET as the running app.
- */
-function makeJwt(userId: string, role: "customer" | "owner"): string {
-  return jwt.sign({ id: userId, role }, AUTH_CONFIG.JWT_SECRET, {
-    expiresIn: AUTH_CONFIG.JWT_EXPIRES_IN as ms.StringValue,
-  });
-}
+import { makeJwt } from "../helpers/testUtils.js";
 
 // Matches testSeeds.createUser default — used in login test request bodies
 const TEST_PASSWORD = "Test@1234";
