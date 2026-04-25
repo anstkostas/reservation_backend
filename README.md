@@ -6,6 +6,7 @@ A robust, secure REST API service built with **Express.js** and **PostgreSQL**. 
 > Want to get up and running quickly? Jump to the [Quick Connect](#quick-connect) section at the end of this document.
 
 ## Table of Contents
+
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [PostgreSQL Connection](#postgresql-connection)
@@ -22,6 +23,7 @@ A robust, secure REST API service built with **Express.js** and **PostgreSQL**. 
 ---
 
 ## Tech Stack
+
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (strict mode, ESM)
 - **Core**: [Node.js](https://nodejs.org/) + [Express.js](https://expressjs.com/) v5
 - **Database**: [PostgreSQL](https://www.postgresql.org/)
@@ -40,7 +42,7 @@ A robust, secure REST API service built with **Express.js** and **PostgreSQL**. 
 
 The application follows a strict layered architecture — no layer may skip another:
 
-```
+```text
 Request → Router → Controller → Service → Repository → Database
 ```
 
@@ -61,12 +63,14 @@ This project connects to a **PostgreSQL** database using **Prisma** with the `@p
 The app supports two connection modes, controlled by environment variables:
 
 **Option A — Single connection URL (recommended for production)**
-```
+
+```bash
 DB_URL="postgresql://user:password@host:5432/dbname"
 ```
 
 **Option B — Individual credentials (convenient for local dev)**
-```
+
+```bash
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=your_db
@@ -150,6 +154,7 @@ npx prisma db seed
 ```
 
 The seed script is registered in `package.json`:
+
 ```json
 "prisma": { "seed": "tsx prisma/seed.ts" }
 ```
@@ -173,7 +178,7 @@ npx prisma studio
 
 ## Project Structure & Patterns
 
-```
+```text
 src/
   config/           # env.ts (env loading), prismaClient.ts (Prisma singleton)
   constants/        # HTTP status codes, messages, enums
@@ -194,15 +199,18 @@ src/
 ```
 
 ### Repositories (Data Access Layer)
+
 - All database access is via Prisma — no raw SQL except `$queryRaw` for `SELECT FOR UPDATE` in reservation capacity checks
 - One repository object per model: `userRepository`, `restaurantRepository`, `reservationRepository`
 - Transaction clients (`Prisma.TransactionClient`) are passed down from services
 
 ### DTOs
+
 - **Input DTOs**: Replaced by Zod schema `.transform()` — sanitization happens at validation
 - **Output DTOs**: Typed functions that shape Prisma model output for API responses
 
 ### Validation (Zod)
+
 - Schemas in `src/validation/` — one file per resource
 - Applied via `validate` middleware: `validate(schema)` for body, `validate(schema, "params")` for params
 - Types inferred via `z.infer<typeof schema>` — never manually duplicated
@@ -212,32 +220,40 @@ src/
 ## Service Layer with Business Logic
 
 ### 🔐 Auth Service (`authService.ts`)
+
 - **Login**: Validates email + bcrypt password match. Returns `UserOutputDTO` + signed JWT.
 - **Signup**: Delegates to `userService.createUser`. Returns `UserOutputDTO` + signed JWT.
 
 ### 👤 User Service (`userService.ts`)
+
 - **Create User (Transactional)**: Hashes password, derives role from presence of `restaurantId`, creates user, optionally assigns restaurant ownership — all in one transaction.
 - **List Unowned Restaurants**: Returns restaurants where `ownerId IS NULL`.
 
 ### 🏪 Restaurant Service (`restaurantService.ts`)
+
 - **Get All / Get By ID**: Returns `RestaurantOutputDTO`. Throws `NotFoundError` if ID doesn't exist.
 
 ### 📅 Reservation Service (`reservationService.ts`)
+
 The core transactional engine of the application.
 
 #### Create Reservation
+
 - **Transactional**: Yes.
 - **Guards**: Customer role only. Date/time validated (future, within 2-month window). Capacity check with `SELECT FOR UPDATE` to prevent overbooking race conditions.
 
 #### Update Reservation
+
 - **Transactional**: Yes (when date/time changes).
 - **Guards**: Ownership check. Active status only. Re-runs capacity check for new slot, excluding the customer's own current reservation.
 
 #### Cancel Reservation
+
 - **Guards**: Active status only. Ownership check.
 - **Logic**: Soft delete — sets status to `canceled`, row is never deleted.
 
 #### Resolve Reservation
+
 - **Role**: Owner only.
 - **Guards**: Owner must own the restaurant linked to the reservation. Active status only.
 - **Status**: `completed` or `no-show`.
@@ -247,6 +263,7 @@ The core transactional engine of the application.
 ## Database Models
 
 ### User
+
 | Field | Type | Notes |
 |---|---|---|
 | id | UUID | Primary key, auto-generated |
@@ -257,6 +274,7 @@ The core transactional engine of the application.
 | role | Enum | `customer` \| `owner` |
 
 ### Restaurant
+
 | Field | Type | Notes |
 |---|---|---|
 | id | UUID | Primary key, auto-generated |
@@ -270,6 +288,7 @@ The core transactional engine of the application.
 | ownerId | UUID? | FK → User; null = unowned |
 
 ### Reservation
+
 | Field | Type | Notes |
 |---|---|---|
 | id | UUID | Primary key, auto-generated |
@@ -289,6 +308,7 @@ The core transactional engine of the application.
 ## API Routes Overview
 
 ### Auth (`/api/auth`)
+
 | Method | Path | Access |
 |---|---|---|
 | POST | `/signup` | Public |
@@ -297,12 +317,14 @@ The core transactional engine of the application.
 | GET | `/me` | Auth required |
 
 ### Restaurants (`/api/restaurants`)
+
 | Method | Path | Access |
 |---|---|---|
 | GET | `/` | Public |
 | GET | `/:id` | Public |
 
 ### Reservations (`/api/reservations`)
+
 | Method | Path | Access |
 |---|---|---|
 | POST | `/restaurants/:restaurantId` | Customer only |
@@ -313,6 +335,7 @@ The core transactional engine of the application.
 | GET | `/owner-reservations` | Owner only |
 
 ### Users (`/api/users`)
+
 | Method | Path | Access |
 |---|---|---|
 | GET | `/unowned-restaurants` | Public (used in signup flow) |
@@ -326,11 +349,13 @@ Full interactive documentation available at `/api/docs` (Swagger UI).
 All errors bubble up to `globalErrorHandler` middleware — no inline error responses in controllers.
 
 **Response format:**
+
 ```json
 { "success": false, "message": "Human-readable message", "statusCode": 400 }
 ```
 
 **Custom error classes** (`src/errors/`):
+
 - `ValidationError` — 400. Also handles Prisma constraint errors via `fromPrisma()`
 - `NotAuthenticatedError` — 401
 - `ForbiddenError` — 403
