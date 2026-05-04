@@ -27,6 +27,8 @@ export const RESPONSE_MESSAGES = {
     INVALID_CREDENTIALS: "Invalid email or password",
     EMAIL_EXISTS: "User with this email already exists",
     NOT_FOUND: "User not found",
+    REFRESH_SUCCESS: "Token refreshed successfully",
+    TOKEN_REUSE_DETECTED: "Session invalidated due to suspicious activity",
   },
 
   RESTAURANT: {

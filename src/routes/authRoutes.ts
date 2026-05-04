@@ -137,4 +137,24 @@ router.post("/signup", validate(createUserSchema), authController.signup);
  */
 router.get("/me", requireAuth, authController.getCurrentUser);
 
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Auth]
+ *     description: Issues new access and refresh tokens using the refresh token cookie. Rotates the refresh token on every call.
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *       401:
+ *         description: Missing, invalid, expired, or reused refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post("/refresh", authController.refresh);
+
 export default router;
