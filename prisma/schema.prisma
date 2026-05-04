@@ -20,14 +20,15 @@ enum ReservationStatus {
 }
 
 model User {
-  id           String        @id @default(uuid()) @db.Uuid
-  firstname    String        @db.VarChar(100)
-  lastname     String        @db.VarChar(100)
-  email        String        @unique @db.VarChar(50)
-  password     String        @db.VarChar(100)
-  role         Role          @default(customer)
-  restaurant   Restaurant?
-  reservations Reservation[]
+  id            String         @id @default(uuid()) @db.Uuid
+  firstname     String         @db.VarChar(100)
+  lastname      String         @db.VarChar(100)
+  email         String         @unique @db.VarChar(50)
+  password      String         @db.VarChar(100)
+  role          Role           @default(customer)
+  restaurant    Restaurant?
+  reservations  Reservation[]
+  refreshTokens RefreshToken[]
 
   @@map("Users")
 }
@@ -61,4 +62,16 @@ model Reservation {
   customer     User              @relation(fields: [customerId], references: [id])
 
   @@map("Reservations")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  tokenHash String   @unique
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyId  String   @db.Uuid
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@map("refresh_tokens")
 }

@@ -38,6 +38,19 @@ interface CookieConfig {
   MAX_AGE: number;
 }
 
+interface RefreshAuthConfig {
+  REFRESH_TOKEN_SECRET: string;
+  REFRESH_TOKEN_EXPIRES_IN: string;
+}
+
+interface RefreshCookieConfig {
+  NAME: string;
+  HTTP_ONLY: boolean;
+  SECURE: boolean;
+  SAME_SITE: "none" | "lax";
+  MAX_AGE: number;
+}
+
 export const SERVER: ServerConfig = {
   PORT: Number(process.env.PORT) || 22000,
 };
@@ -75,6 +88,23 @@ export const COOKIE_CONFIG: CookieConfig = {
   SAME_SITE: ENV === "production" ? "none" : "lax",
   // cast needed — JWT_EXPIRES_IN comes from env (string), ms() expects branded StringValue
   MAX_AGE: ms(AUTH_CONFIG.JWT_EXPIRES_IN as ms.StringValue),
+};
+
+export const REFRESH_AUTH_CONFIG: RefreshAuthConfig = {
+  REFRESH_TOKEN_SECRET:
+    process.env.REFRESH_TOKEN_SECRET ??
+    (() => {
+      throw new Error("REFRESH_TOKEN_SECRET is not configured — aborting");
+    })(),
+  REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN ?? "7d",
+};
+
+export const REFRESH_COOKIE_CONFIG: RefreshCookieConfig = {
+  NAME: process.env.REFRESH_COOKIE_NAME || "refreshToken",
+  HTTP_ONLY: true,
+  SECURE: ENV === "production",
+  SAME_SITE: ENV === "production" ? "none" : "lax",
+  MAX_AGE: Number(process.env.REFRESH_COOKIE_MAX_AGE) || ms("7d" as ms.StringValue),
 };
 
 export { ENV };
