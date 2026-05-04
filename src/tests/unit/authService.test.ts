@@ -14,6 +14,9 @@ vi.mock("../../repositories/index.js", () => ({
   userRepository: {
     findByEmail: vi.fn(),
   },
+  refreshTokenRepository: {
+    create: vi.fn(),
+  },
 }));
 
 vi.mock("../../services/userService.js", () => ({
@@ -61,8 +64,8 @@ describe("authService", () => {
 
       expect(result.user.id).toBe(mockUser.id);
       expect(result.user.email).toBe(mockUser.email);
-      expect(result.token).toBeTruthy();
-      // loginOutputDTO must strip the password — it must never appear in the output
+      expect(result.tokens.accessToken).toBeTruthy();
+      // generateTokens signs both tokens — password must never appear in the output
       expect(result.user).not.toHaveProperty("password");
     });
 
@@ -92,7 +95,7 @@ describe("authService", () => {
   });
 
   describe("signup", () => {
-    it("returns a LoginOutput with user and token for valid input", async () => {
+    it("returns a LoginServiceOutput with user and tokens for valid input", async () => {
       vi.mocked(userService.createUser).mockResolvedValue(mockUserOutput);
 
       const result = await authService.signup({
@@ -106,7 +109,7 @@ describe("authService", () => {
 
       expect(result.user.id).toBe(mockUser.id);
       expect(result.user.email).toBe(mockUser.email);
-      expect(result.token).toBeTruthy();
+      expect(result.tokens.accessToken).toBeTruthy();
     });
   });
 });
