@@ -42,12 +42,21 @@ export function globalErrorHandler(
     // details only exists on ValidationError
     details = err instanceof ValidationError ? err.details : undefined;
   } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    // Safety net — Prisma constraint errors that were not caught in services
-    // (e.g. P2002 unique violation). fromPrisma() maps known codes to readable messages.
-    const converted = ValidationError.fromPrisma(err);
-    statusCode = converted.statusCode;
-    message = converted.message;
-    details = converted.details;
+    if (err.code.startsWith('P')) {
+      // Known Prisma code (e.g. P2002 unique violation) — convert to a readable message.
+      const converted = ValidationError.fromPrisma(err);
+      statusCode = converted.statusCode;
+      message = converted.message;
+      details = converted.details;
+    } else {
+      // Native error code (e.g. ECONNREFUSED) — DB unreachable during a request.
+      statusCode = 503;
+      message = 'Service temporarily unavailable. Please try again later.';
+    }
+  } else if (err instanceof Prisma.PrismaClientInitializationError) {
+    // DB unreachable at client initialization time.
+    statusCode = 503;
+    message = 'Service temporarily unavailable. Please try again later.';
   }
 
   res.status(statusCode).json({

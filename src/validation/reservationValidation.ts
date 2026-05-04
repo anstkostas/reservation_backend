@@ -14,7 +14,6 @@ export const updateReservationSchema = z
     // max(20) — same sanity cap as createReservationSchema; see note above
     people: z.number().int().min(1).max(20).optional(),
   })
-  // mirrors Joi's .min(1) — at least one field must be present
   .refine((data) => Object.values(data).some((v) => v !== undefined), {
     message: "At least one field must be provided",
   });

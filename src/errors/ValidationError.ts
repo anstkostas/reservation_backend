@@ -40,6 +40,6 @@ export class ValidationError extends Error {
       // No field-level details — surfaces as a root-level message on the frontend
       return new ValidationError(`${fields} already in use`);
     }
-    return new ValidationError(err.message || "Validation failed");
+    return new ValidationError('An unexpected error occurred.');
   }
 }
