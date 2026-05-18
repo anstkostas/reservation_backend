@@ -17,7 +17,7 @@ const router = express.Router();
  *   post:
  *     summary: Login user
  *     tags: [Auth]
- *     description: Authenticate a user and returns a JWT
+ *     description: Authenticate a user and set access + refresh token cookies
  *     security: []
  *     requestBody:
  *       required: true
@@ -42,7 +42,7 @@ router.post("/login", validate(loginSchema), authController.login);
  * /auth/logout:
  *   post:
  *     summary: Logout the current user
- *     description: Clears the JWT cookie (`accessToken`). User must be authenticated.
+ *     description: Clears both auth cookies and invalidates all refresh token sessions in the DB. User must be authenticated.
  *     tags:
  *       - Auth
  *     security:
@@ -79,7 +79,7 @@ router.post("/logout", requireAuth, authController.logout);
  *     tags:
  *       - Auth
  *     summary: Register a new user
- *     description: Creates a new user and returns a JWT token
+ *     description: Creates a new user and sets access + refresh token cookies
  *     security: []
  *     requestBody:
  *       required: true

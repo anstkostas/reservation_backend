@@ -1,12 +1,19 @@
 import app from "./app.js";
 import { SERVER } from "./config/env.js";
 import { prisma } from "./config/prismaClient.js";
+import { refreshTokenRepository } from "./repositories/index.js";
 
 async function startServer(): Promise<void> {
   // JWT_SECRET is validated at module init in config/env.ts — no guard needed here
   try {
     await prisma.$connect();
     console.log("[LOG] server.startServer: Database connected");
+
+    // Prune expired refresh tokens on startup — prevents unbounded table growth
+    const pruned = await refreshTokenRepository.pruneExpired();
+    if (pruned > 0) {
+      console.log(`[LOG] server.startServer: Pruned ${pruned} expired refresh token(s)`);
+    }
 
     app.listen(SERVER.PORT, () => {
       console.log(`[LOG] server.startServer: Server running on port ${SERVER.PORT}`);
