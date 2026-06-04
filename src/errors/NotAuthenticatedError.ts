@@ -1,4 +1,4 @@
-import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES, ErrorCode } from "../constants/index.js";
 
 /**
  * Thrown when a request arrives without valid authentication credentials.
@@ -6,10 +6,12 @@ import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
  */
 export class NotAuthenticatedError extends Error {
   statusCode: number;
+  code?: ErrorCode;
 
-  constructor(message: string = RESPONSE_MESSAGES.AUTH.NOT_AUTHENTICATED) {
+  constructor(message: string = RESPONSE_MESSAGES.AUTH.NOT_AUTHENTICATED, code?: ErrorCode) {
     super(message);
     this.name = "NotAuthenticatedError";
     this.statusCode = HTTP_STATUS.NOT_AUTHENTICATED;
+    this.code = code;
   }
 }

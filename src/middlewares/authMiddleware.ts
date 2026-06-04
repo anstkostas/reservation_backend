@@ -4,6 +4,7 @@ import { prisma } from "../config/prismaClient.js";
 import { type Role } from "../generated/prisma/index.js";
 import { NotAuthenticatedError } from "../errors/index.js";
 import { AUTH_CONFIG, COOKIE_CONFIG } from "../config/env.js";
+import { ERROR_CODES } from "../constants/index.js";
 import { userOutputDTO, type UserOutput } from "../dtos/index.js";
 
 /** Shape of the JWT payload signed by authService */
@@ -21,7 +22,7 @@ interface JwtPayloadWithId extends jwt.JwtPayload {
  * @throws {NotAuthenticatedError} If req.user is not populated
  */
 export function getAuthUser(req: Request): UserOutput {
-  if (!req.user) throw new NotAuthenticatedError();
+  if (!req.user) throw new NotAuthenticatedError(undefined, ERROR_CODES.AUTH_NOT_AUTHENTICATED);
   return req.user;
 }
 
@@ -37,12 +38,12 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
 
   try {
     if (req.cookies === undefined) {
-      return next(new NotAuthenticatedError("Cookie parser middleware not configured"));
+      return next(new NotAuthenticatedError("Cookie parser middleware not configured", ERROR_CODES.AUTH_COOKIE_PARSER_MISSING));
     }
 
     const token: string | undefined = req.cookies[COOKIE_CONFIG.NAME];
     if (!token) {
-      return next(new NotAuthenticatedError("No authentication token provided"));
+      return next(new NotAuthenticatedError("No authentication token provided", ERROR_CODES.AUTH_NO_TOKEN));
     }
 
     // cast is safe — we control the payload shape when signing (see JwtPayloadWithId above)
@@ -51,17 +52,17 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      return next(new NotAuthenticatedError("User not found"));
+      return next(new NotAuthenticatedError("User not found", ERROR_CODES.AUTH_USER_NOT_FOUND));
     }
 
     req.user = userOutputDTO(user);
     next();
   } catch (err) {
     if (err instanceof Error && err.name === "TokenExpiredError") {
-      return next(new NotAuthenticatedError("Token expired"));
+      return next(new NotAuthenticatedError("Token expired", ERROR_CODES.AUTH_TOKEN_EXPIRED));
     }
     if (err instanceof Error && err.name === "JsonWebTokenError") {
-      return next(new NotAuthenticatedError("Invalid token"));
+      return next(new NotAuthenticatedError("Invalid token", ERROR_CODES.AUTH_TOKEN_INVALID));
     }
     next(err);
   }

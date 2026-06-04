@@ -1,5 +1,5 @@
 import { ValidationError } from "../errors/index.js";
-import { RESERVATION_BOOKING_WINDOW_MONTHS } from "../constants/index.js";
+import { RESERVATION_BOOKING_WINDOW_MONTHS, ERROR_CODES } from "../constants/index.js";
 
 
 /**
@@ -26,13 +26,15 @@ import { RESERVATION_BOOKING_WINDOW_MONTHS } from "../constants/index.js";
 export function validateReservationDateTime(scheduledAt: Date): void {
   const minTime = new Date(Date.now() + 30 * 60 * 1000); // 30-minute minimum lead time
   if (scheduledAt < minTime) {
-    throw new ValidationError("Reservation must be at least 30 minutes from now");
+    throw new ValidationError("Reservation must be at least 30 minutes from now", [], ERROR_CODES.RESERVATION_TIME_INVALID);
   }
   const maxTime = new Date();
   maxTime.setMonth(maxTime.getMonth() + RESERVATION_BOOKING_WINDOW_MONTHS);
   if (scheduledAt > maxTime) {
     throw new ValidationError(
-      `Reservation must be within ${RESERVATION_BOOKING_WINDOW_MONTHS} months from today`
+      `Reservation must be within ${RESERVATION_BOOKING_WINDOW_MONTHS} months from today`,
+      [],
+      ERROR_CODES.RESERVATION_TIME_INVALID
     );
   }
 }

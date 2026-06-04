@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { type RequestHandler, Request, Response, NextFunction } from "express";
 import { ValidationError } from "../errors/index.js";
+import { ERROR_CODES } from "../constants/index.js";
 
 /**
  * Returns Express middleware that validates and coerces req[property] against a Zod schema.
@@ -29,7 +30,9 @@ export function validate(
             // path[0] is the top-level field name; empty string fallback for schema-level errors
             field: String(e.path[0] ?? ""),
             message: e.message,
-          }))
+            code: e.code,
+          })),
+          ERROR_CODES.VALIDATION_ERROR
         )
       );
     }

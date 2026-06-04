@@ -9,7 +9,7 @@ import {
   type RestaurantOutput,
 } from "../dtos/index.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
-import { SALT_ROUNDS } from "../constants/index.js";
+import { SALT_ROUNDS, ERROR_CODES } from "../constants/index.js";
 import type { CreateUserInput } from "../validation/index.js";
 
 export const userService = {
@@ -43,7 +43,7 @@ export const userService = {
 
     const exists = await userRepository.findByEmail(email);
     if (exists) {
-      throw new ValidationError("Email already in use");
+      throw new ValidationError("Email already in use", [], ERROR_CODES.USER_EMAIL_EXISTS);
     }
 
     const role = roleInput === "owner" ? Role.owner : Role.customer;
@@ -58,13 +58,13 @@ export const userService = {
 
       if (role === Role.owner) {
         if (!restaurantId) {
-          throw new ValidationError("Restaurant is required for owner role");
+          throw new ValidationError("Restaurant is required for owner role", [], ERROR_CODES.USER_OWNER_RESTAURANT_REQUIRED);
         }
 
         const restaurant = await restaurantRepository.findById(restaurantId, tx);
-        if (!restaurant) throw new NotFoundError("Restaurant not found");
+        if (!restaurant) throw new NotFoundError("Restaurant not found", ERROR_CODES.RESTAURANT_NOT_FOUND);
         if (restaurant.ownerId) {
-          throw new ValidationError("Restaurant already has an owner");
+          throw new ValidationError("Restaurant already has an owner", [], ERROR_CODES.RESTAURANT_ALREADY_OWNED);
         }
 
         await restaurantRepository.assignOwner(restaurantId, newUser.id, tx);

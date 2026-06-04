@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { userRepository, refreshTokenRepository } from "../repositories/index.js";
 import { ValidationError, NotAuthenticatedError } from "../errors/index.js";
 import { AUTH_CONFIG, REFRESH_AUTH_CONFIG } from "../config/env.js";
+import { ERROR_CODES } from "../constants/index.js";
 import { userOutputDTO, type LoginServiceOutput, type AuthTokens } from "../dtos/index.js";
 import type { LoginInput, CreateUserInput } from "../validation/index.js";
 import { userService } from "./userService.js";
@@ -51,12 +52,12 @@ export const authService = {
 
     const user = await userRepository.findByEmail(email);
     if (!user) {
-      throw new ValidationError("Invalid email or password");
+      throw new ValidationError("Invalid email or password", [], ERROR_CODES.AUTH_INVALID_CREDENTIALS);
     }
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      throw new ValidationError("Invalid email or password");
+      throw new ValidationError("Invalid email or password", [], ERROR_CODES.AUTH_INVALID_CREDENTIALS);
     }
 
     const tokens = await generateTokens(user.id, user.role);
@@ -106,7 +107,7 @@ export const authService = {
         REFRESH_AUTH_CONFIG.REFRESH_TOKEN_SECRET,
       ) as { id: string };
     } catch {
-      throw new NotAuthenticatedError("Invalid or expired refresh token");
+      throw new NotAuthenticatedError("Invalid or expired refresh token", ERROR_CODES.AUTH_REFRESH_INVALID);
     }
 
     // Step 2 — look up in DB (handles reuse detection)
@@ -116,20 +117,20 @@ export const authService = {
       // Token passed JWT verification but is not in DB — already rotated.
       // This is a reuse attack — invalidate ALL sessions for this user.
       await refreshTokenRepository.deleteAllForUser(payload.id);
-      throw new NotAuthenticatedError("Refresh token reuse detected — all sessions invalidated");
+      throw new NotAuthenticatedError("Refresh token reuse detected — all sessions invalidated", ERROR_CODES.AUTH_REFRESH_REUSE);
     }
 
     // Step 3 — belt-and-suspenders expiry check
     if (record.expiresAt < new Date()) {
       await refreshTokenRepository.deleteById(record.id);
-      throw new NotAuthenticatedError("Refresh token expired");
+      throw new NotAuthenticatedError("Refresh token expired", ERROR_CODES.AUTH_REFRESH_EXPIRED);
     }
 
     // Step 4 — fetch current user
     const user = await userRepository.findById(record.userId);
     if (!user) {
       await refreshTokenRepository.deleteById(record.id);
-      throw new NotAuthenticatedError("User not found");
+      throw new NotAuthenticatedError("User not found", ERROR_CODES.AUTH_USER_NOT_FOUND);
     }
 
     // Step 5 — rotate: delete old row, issue new tokens preserving the familyId

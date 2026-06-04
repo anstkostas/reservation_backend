@@ -1,6 +1,7 @@
 import { type RequestHandler, Request, Response, NextFunction } from "express";
 import { Role } from "../generated/prisma/index.js";
 import { ForbiddenError } from "../errors/index.js";
+import { ERROR_CODES } from "../constants/index.js";
 
 /**
  * Enforce role-based access. Request proceeds only if req.user.role matches the required role.
@@ -15,7 +16,7 @@ import { ForbiddenError } from "../errors/index.js";
 export function requireRole(requiredRole: Role): RequestHandler {
   return function roleMiddleware(req: Request, _res: Response, next: NextFunction): void {
     if (!req.user || req.user.role !== requiredRole) {
-      return next(new ForbiddenError("You do not have permission to access this resource"));
+      return next(new ForbiddenError("You do not have permission to access this resource", ERROR_CODES.FORBIDDEN));
     }
     next();
   };

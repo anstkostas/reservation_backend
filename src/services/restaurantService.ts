@@ -1,6 +1,7 @@
 import { restaurantRepository } from "../repositories/index.js";
 import { restaurantOutputDTO, type RestaurantOutput } from "../dtos/index.js";
 import { NotFoundError } from "../errors/index.js";
+import { ERROR_CODES } from "../constants/index.js";
 
 export const restaurantService = {
   /**
@@ -23,7 +24,7 @@ export const restaurantService = {
   async getRestaurantById(id: string): Promise<RestaurantOutput> {
     const restaurant = await restaurantRepository.findById(id);
     if (!restaurant) {
-      throw new NotFoundError("Restaurant not found");
+      throw new NotFoundError("Restaurant not found", ERROR_CODES.RESTAURANT_NOT_FOUND);
     }
     return restaurantOutputDTO(restaurant);
   },

@@ -4,7 +4,7 @@ import { restaurantRepository, reservationRepository } from "../repositories/ind
 import { reservationOutputDTO, type ReservationOutput } from "../dtos/index.js";
 import { validateReservationDateTime } from "../utils/index.js";
 import { NotFoundError, ValidationError, ForbiddenError } from "../errors/index.js";
-import { RESERVATION_STATUS } from "../constants/index.js";
+import { RESERVATION_STATUS, ERROR_CODES } from "../constants/index.js";
 import type {
   CreateReservationInput,
   UpdateReservationInput,
@@ -42,14 +42,14 @@ export const reservationService = {
     customer: UserOutput
   ): Promise<ReservationOutput> {
     if (customer.role !== Role.customer)
-      throw new ForbiddenError("Only customers can make reservations");
+      throw new ForbiddenError("Only customers can make reservations", ERROR_CODES.RESERVATION_CUSTOMER_ONLY);
 
     // Validate before entering the transaction — pure check, no DB access needed
     validateReservationDateTime(data.scheduledAt);
 
     return prisma.$transaction(async (tx) => {
       const restaurant = await restaurantRepository.findById(restaurantId, tx);
-      if (!restaurant) throw new NotFoundError("Restaurant not found");
+      if (!restaurant) throw new NotFoundError("Restaurant not found", ERROR_CODES.RESTAURANT_NOT_FOUND);
 
       // Per-customer 4-hour conflict check — runs inside the transaction to avoid stale reads
       const conflictingReservation = await reservationRepository.findActiveByCustomerInWindow(
@@ -59,7 +59,9 @@ export const reservationService = {
       );
       if (conflictingReservation) {
         throw new ValidationError(
-          "You already have a reservation within 4 hours of this time"
+          "You already have a reservation within 4 hours of this time",
+          [],
+          ERROR_CODES.RESERVATION_TIME_INVALID
         );
       }
 
@@ -72,7 +74,7 @@ export const reservationService = {
       );
 
       if (reservedTables >= restaurant.capacity) {
-        throw new ValidationError("Restaurant is fully booked for this time slot");
+        throw new ValidationError("Restaurant is fully booked for this time slot", [], ERROR_CODES.RESERVATION_SLOT_FULL);
       }
 
       const createInput: Prisma.ReservationCreateInput = {
@@ -117,18 +119,18 @@ export const reservationService = {
     customer: UserOutput
   ): Promise<ReservationOutput> {
     if (customer.role !== Role.customer)
-      throw new ForbiddenError("Only customers can update reservations");
+      throw new ForbiddenError("Only customers can update reservations", ERROR_CODES.RESERVATION_CUSTOMER_ONLY);
 
     return prisma.$transaction(async (tx) => {
       const existing = await reservationRepository.findById(id, tx);
-      if (!existing) throw new NotFoundError("Reservation not found");
+      if (!existing) throw new NotFoundError("Reservation not found", ERROR_CODES.RESERVATION_NOT_FOUND);
 
       if (existing.customerId !== customer.id) {
-        throw new ForbiddenError("Not allowed to modify another person's reservation");
+        throw new ForbiddenError("Not allowed to modify another person's reservation", ERROR_CODES.RESERVATION_NOT_OWNER);
       }
 
       if (existing.status !== RESERVATION_STATUS.ACTIVE) {
-        throw new ValidationError("Only active reservations can be modified");
+        throw new ValidationError("Only active reservations can be modified", [], ERROR_CODES.RESERVATION_NOT_ACTIVE);
       }
 
       const newScheduledAt = data.scheduledAt ?? existing.scheduledAt;
@@ -147,12 +149,14 @@ export const reservationService = {
         );
         if (conflictingReservation) {
           throw new ValidationError(
-            "You already have a reservation within 4 hours of this time"
+            "You already have a reservation within 4 hours of this time",
+            [],
+            ERROR_CODES.RESERVATION_TIME_INVALID
           );
         }
 
         const restaurant = await restaurantRepository.findById(existing.restaurantId, tx);
-        if (!restaurant) throw new NotFoundError("Restaurant not found");
+        if (!restaurant) throw new NotFoundError("Restaurant not found", ERROR_CODES.RESTAURANT_NOT_FOUND);
 
         const reservedTables = await reservationRepository.countActiveBySlot(
           existing.restaurantId,
@@ -166,7 +170,7 @@ export const reservationService = {
         const effectiveReserved = isSameSlot ? reservedTables - 1 : reservedTables;
 
         if (effectiveReserved >= restaurant.capacity) {
-          throw new ValidationError("Restaurant is fully booked for the new time slot");
+          throw new ValidationError("Restaurant is fully booked for the new time slot", [], ERROR_CODES.RESERVATION_SLOT_FULL);
         }
       }
 
@@ -175,7 +179,7 @@ export const reservationService = {
       if (data.people !== undefined) updatePayload.people = data.people;
 
       const updated = await reservationRepository.update(id, updatePayload, tx);
-      if (!updated) throw new NotFoundError("Reservation not found");
+      if (!updated) throw new NotFoundError("Reservation not found", ERROR_CODES.RESERVATION_NOT_FOUND);
       return reservationOutputDTO(updated);
     });
   },
@@ -193,14 +197,14 @@ export const reservationService = {
   async cancelReservation(id: string, customer: UserOutput): Promise<ReservationOutput> {
     return prisma.$transaction(async (tx) => {
       const reservation = await reservationRepository.findById(id, tx);
-      if (!reservation) throw new NotFoundError("Reservation not found");
+      if (!reservation) throw new NotFoundError("Reservation not found", ERROR_CODES.RESERVATION_NOT_FOUND);
 
       if (reservation.customerId !== customer.id) {
-        throw new ForbiddenError("Cannot cancel another customer's reservation");
+        throw new ForbiddenError("Cannot cancel another customer's reservation", ERROR_CODES.RESERVATION_NOT_OWNER);
       }
 
       if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
-        throw new ValidationError("Only active reservations can be canceled");
+        throw new ValidationError("Only active reservations can be canceled", [], ERROR_CODES.RESERVATION_NOT_ACTIVE);
       }
 
       // Soft cancel — sets status to "canceled" instead of deleting the row
@@ -211,7 +215,7 @@ export const reservationService = {
         },
         tx
       );
-      if (!updated) throw new NotFoundError("Reservation not found");
+      if (!updated) throw new NotFoundError("Reservation not found", ERROR_CODES.RESERVATION_NOT_FOUND);
       return reservationOutputDTO(updated);
     });
   },
@@ -233,22 +237,22 @@ export const reservationService = {
     user: UserOutput
   ): Promise<ReservationOutput> {
     if (user.role !== Role.owner) {
-      throw new ForbiddenError("Only owners can mark a reservation as completed or no-show");
+      throw new ForbiddenError("Only owners can mark a reservation as completed or no-show", ERROR_CODES.RESERVATION_OWNER_ONLY);
     }
 
     return prisma.$transaction(async (tx) => {
       const restaurant = await restaurantRepository.findByOwnerId(user.id, tx);
-      if (!restaurant) throw new ValidationError("Owner has no assigned restaurant");
+      if (!restaurant) throw new ValidationError("Owner has no assigned restaurant", [], ERROR_CODES.RESERVATION_OWNER_NO_RESTAURANT);
 
       const reservation = await reservationRepository.findById(id, tx);
-      if (!reservation) throw new NotFoundError("Reservation not found");
+      if (!reservation) throw new NotFoundError("Reservation not found", ERROR_CODES.RESERVATION_NOT_FOUND);
 
       if (reservation.restaurantId !== restaurant.id) {
-        throw new ForbiddenError("Cannot resolve reservation for another restaurant");
+        throw new ForbiddenError("Cannot resolve reservation for another restaurant", ERROR_CODES.RESERVATION_WRONG_RESTAURANT);
       }
 
       if (reservation.status !== RESERVATION_STATUS.ACTIVE) {
-        throw new ValidationError("Only active reservations can be resolved");
+        throw new ValidationError("Only active reservations can be resolved", [], ERROR_CODES.RESERVATION_NOT_ACTIVE);
       }
 
       // Zod validates "no-show" (hyphen) but Prisma stores no_show (underscore) internally
@@ -256,7 +260,7 @@ export const reservationService = {
         status === "no-show" ? RESERVATION_STATUS.NO_SHOW : RESERVATION_STATUS.COMPLETED;
 
       const updated = await reservationRepository.update(id, { status: prismaStatus }, tx);
-      if (!updated) throw new NotFoundError("Reservation not found");
+      if (!updated) throw new NotFoundError("Reservation not found", ERROR_CODES.RESERVATION_NOT_FOUND);
       return reservationOutputDTO(updated);
     });
   },
@@ -271,11 +275,11 @@ export const reservationService = {
    */
   async listOwnerReservations(user: UserOutput): Promise<ReservationOutput[]> {
     if (user.role !== Role.owner) {
-      throw new ForbiddenError("Only owners can view active reservations");
+      throw new ForbiddenError("Only owners can view active reservations", ERROR_CODES.RESERVATION_OWNER_ONLY);
     }
 
     const restaurant = await restaurantRepository.findByOwnerId(user.id);
-    if (!restaurant) throw new ValidationError("Owner has no assigned restaurant");
+    if (!restaurant) throw new ValidationError("Owner has no assigned restaurant", [], ERROR_CODES.RESERVATION_OWNER_NO_RESTAURANT);
 
     const reservations = await reservationRepository.findAll({
       restaurantId: restaurant.id,
@@ -293,7 +297,7 @@ export const reservationService = {
    */
   async listCustomerReservations(customer: UserOutput): Promise<ReservationOutput[]> {
     if (customer.role !== Role.customer) {
-      throw new ForbiddenError("Only customers can view their reservations");
+      throw new ForbiddenError("Only customers can view their reservations", ERROR_CODES.RESERVATION_CUSTOMER_ONLY);
     }
 
     const reservations = await reservationRepository.findAll({

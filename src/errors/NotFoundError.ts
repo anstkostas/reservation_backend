@@ -1,4 +1,4 @@
-import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES, ErrorCode } from "../constants/index.js";
 
 /**
  * Thrown when a requested resource does not exist in the database.
@@ -6,10 +6,12 @@ import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
  */
 export class NotFoundError extends Error {
   statusCode: number;
+  code?: ErrorCode;
 
-  constructor(message: string = RESPONSE_MESSAGES.NOT_FOUND) {
+  constructor(message: string = RESPONSE_MESSAGES.NOT_FOUND, code?: ErrorCode) {
     super(message);
     this.name = "NotFoundError";
     this.statusCode = HTTP_STATUS.NOT_FOUND;
+    this.code = code;
   }
 }

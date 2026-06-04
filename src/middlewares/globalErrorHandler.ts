@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Prisma } from "../generated/prisma/index.js";
 import { ENV } from "../config/env.js";
+import { ERROR_CODES, ErrorCode } from "../constants/index.js";
 import {
   ValidationError,
   ValidationDetail,
@@ -29,6 +30,7 @@ export function globalErrorHandler(
 
   let statusCode = 500;
   let message = "Internal Server Error";
+  let code: ErrorCode | undefined = ERROR_CODES.INTERNAL_ERROR;
   let details: ValidationDetail[] | undefined;
 
   if (
@@ -39,6 +41,7 @@ export function globalErrorHandler(
   ) {
     statusCode = err.statusCode;
     message = err.message;
+    code = err.code;
     // details only exists on ValidationError
     details = err instanceof ValidationError ? err.details : undefined;
   } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -47,21 +50,25 @@ export function globalErrorHandler(
       const converted = ValidationError.fromPrisma(err);
       statusCode = converted.statusCode;
       message = converted.message;
+      code = converted.code;
       details = converted.details;
     } else {
       // Native error code (e.g. ECONNREFUSED) — DB unreachable during a request.
       statusCode = 503;
       message = 'Service temporarily unavailable. Please try again later.';
+      code = ERROR_CODES.SERVICE_UNAVAILABLE;
     }
   } else if (err instanceof Prisma.PrismaClientInitializationError) {
     // DB unreachable at client initialization time.
     statusCode = 503;
     message = 'Service temporarily unavailable. Please try again later.';
+    code = ERROR_CODES.SERVICE_UNAVAILABLE;
   }
 
   res.status(statusCode).json({
     success: false,
     message,
+    ...(code && { code }),
     ...(details && { details }),
     ...(ENV === "development" && { stack: err.stack }),
   });

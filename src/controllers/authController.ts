@@ -3,7 +3,7 @@ import { authService } from "../services/index.js";
 import { sendResponse } from "../utils/index.js";
 import { getAuthUser } from "../middlewares/index.js";
 import { COOKIE_CONFIG, REFRESH_COOKIE_CONFIG } from "../config/env.js";
-import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES, ERROR_CODES } from "../constants/index.js";
 import { NotAuthenticatedError } from "../errors/index.js";
 import type { LoginInput, CreateUserInput } from "../validation/index.js";
 
@@ -97,7 +97,7 @@ export const authController = {
     try {
       const rawRefreshToken: string | undefined = req.cookies[REFRESH_COOKIE_CONFIG.NAME];
       if (!rawRefreshToken) {
-        return next(new NotAuthenticatedError("No refresh token provided"));
+        return next(new NotAuthenticatedError("No refresh token provided", ERROR_CODES.AUTH_NO_REFRESH_TOKEN));
       }
 
       const { user, tokens } = await authService.refresh(rawRefreshToken);

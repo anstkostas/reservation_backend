@@ -1,10 +1,12 @@
 import { Prisma } from "../generated/prisma/index.js";
-import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES, ErrorCode, ERROR_CODES } from "../constants/index.js";
 
 /** A single field-level validation failure returned in the error response. */
 export interface ValidationDetail {
   field: string;
   message: string;
+  /** Zod issue code (e.g. too_small, invalid_type) or a custom code — open string set. */
+  code?: string;
 }
 
 /**
@@ -12,16 +14,21 @@ export interface ValidationDetail {
  * Maps to HTTP 400 Bad Request. Carries an optional array of field-level details
  * ({ field, message }) that the frontend maps directly to form field errors.
  */
-
 export class ValidationError extends Error {
   statusCode: number;
   details: ValidationDetail[];
+  code?: ErrorCode;
 
-  constructor(message: string = RESPONSE_MESSAGES.BAD_REQUEST, details: ValidationDetail[] = []) {
+  constructor(
+    message: string = RESPONSE_MESSAGES.BAD_REQUEST,
+    details: ValidationDetail[] = [],
+    code?: ErrorCode
+  ) {
     super(message);
     this.name = "ValidationError";
     this.statusCode = HTTP_STATUS.BAD_REQUEST;
     this.details = details;
+    this.code = code;
   }
 
   /**
@@ -38,8 +45,8 @@ export class ValidationError extends Error {
         ? err.meta.target.join(", ")
         : String(err.meta.target);
       // No field-level details — surfaces as a root-level message on the frontend
-      return new ValidationError(`${fields} already in use`);
+      return new ValidationError(`${fields} already in use`, [], ERROR_CODES.RESOURCE_CONFLICT);
     }
-    return new ValidationError('An unexpected error occurred.');
+    return new ValidationError('An unexpected error occurred.', [], ERROR_CODES.INTERNAL_ERROR);
   }
 }
