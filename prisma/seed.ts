@@ -56,6 +56,29 @@ async function main(): Promise<void> {
 
   const restaurants = await prisma.restaurant.findMany();
 
+  // --- Restaurant translations (el only; English stays canonical on Restaurant.description) ---
+  const elDescriptions: Record<string, string> = {
+    "Ocean View Taverna": "Φρέσκα θαλασσινά με υπέροχη θέα στη θάλασσα.",
+    "Mountain Grill": "Παραδοσιακή ψησταριά στα βουνά.",
+    "Urban Bistro": "Μοντέρνα κουζίνα στο κέντρο της πόλης.",
+    "Garden Café": "Ζεστή καφετέρια με υπαίθρια καθίσματα σε έναν καταπράσινο κήπο.",
+    "Sunset Deli": "Χαλαρό deli με σάντουιτς και φρέσκιες σαλάτες.",
+    "The Steakhouse": "Εκλεκτές μπριζόλες ψημένες στην εντέλεια.",
+    "Pasta Palace": "Χειροποίητα ζυμαρικά και ιταλικά κλασικά πιάτα.",
+    "Sushi Corner": "Φρέσκο σούσι και ιαπωνικές λιχουδιές.",
+    "Vegan Delight": "Μενού 100% φυτικής βάσης με υγιεινές επιλογές.",
+    "Mediterraneo": "Μεσογειακή κουζίνα με φρέσκα υλικά.",
+  };
+
+  const translationData = restaurants.flatMap((restaurant) => {
+    const description = elDescriptions[restaurant.name];
+    return description
+      ? [{ restaurantId: restaurant.id, locale: "el", description }]
+      : [];
+  });
+
+  await prisma.restaurantTranslation.createMany({ data: translationData });
+
   // --- Reservations ---
   const random = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 

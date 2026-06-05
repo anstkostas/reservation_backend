@@ -45,8 +45,25 @@ model Restaurant {
   ownerId       String?       @unique @db.Uuid
   owner         User?         @relation(fields: [ownerId], references: [id])
   reservations  Reservation[]
+  translations  RestaurantTranslation[]
 
   @@map("Restaurants")
+}
+
+model RestaurantTranslation {
+  id           String     @id @default(uuid()) @db.Uuid
+  restaurantId String     @db.Uuid
+  // language code ("en" | "el") — matches Accept-Language base codes / SUPPORTED_LOCALES.
+  // Only non-canonical locales are stored (el); English lives on Restaurant.description.
+  locale       String     @db.VarChar(10)
+  // Nullable on purpose: once this table holds multiple translatable columns, a locale row can
+  // translate some and leave others null — the DTO then falls back to the canonical column per field.
+  description  String?
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // One translation row per restaurant per locale — also enables upsert on the write path.
+  @@unique([restaurantId, locale])
+  @@map("restaurant_translations")
 }
 
 model Reservation {

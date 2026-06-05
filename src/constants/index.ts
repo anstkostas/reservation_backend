@@ -5,3 +5,4 @@ export * from "./responseMessages.js";
 export * from "./prismaErrorCodes.js";
 export * from "./bcryptConfig.js";
 export * from "./errorCodes.js";
+export * from "./locales.js";
