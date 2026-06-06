@@ -1,7 +1,7 @@
-import app from "./app.js";
-import { SERVER } from "./config/env.js";
-import { prisma } from "./config/prismaClient.js";
-import { refreshTokenRepository } from "./repositories/index.js";
+import app from "@/app.js";
+import { SERVER } from "@/config/env.js";
+import { prisma } from "@/config/prismaClient.js";
+import { refreshTokenRepository } from "@/repositories/index.js";
 
 async function startServer(): Promise<void> {
   // JWT_SECRET is validated at module init in config/env.ts — no guard needed here

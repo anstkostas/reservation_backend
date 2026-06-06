@@ -5,9 +5,9 @@
  *   description: Authentication endpoints
  */
 import express from "express";
-import { authController } from "../controllers/index.js";
-import { requireAuth, validate } from "../middlewares/index.js";
-import { createUserSchema, loginSchema } from "../validation/index.js";
+import { authController } from "@/controllers/index.js";
+import { requireAuth, validate } from "@/middlewares/index.js";
+import { createUserSchema, loginSchema } from "@/validation/index.js";
 
 const router = express.Router();
 

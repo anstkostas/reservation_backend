@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { RESPONSE_MESSAGES } from "../constants/index.js";
+import { RESPONSE_MESSAGES } from "@/constants/index.js";
 
 /**
  * Sends a standardised success JSON response.

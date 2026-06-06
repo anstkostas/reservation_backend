@@ -1,4 +1,4 @@
-import { HTTP_STATUS, RESPONSE_MESSAGES, ErrorCode } from "../constants/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES, ErrorCode } from "@/constants/index.js";
 
 /**
  * Thrown when a requested resource does not exist in the database.

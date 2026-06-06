@@ -2,12 +2,12 @@ import jwt from "jsonwebtoken";
 import ms from "ms";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
-import { userRepository, refreshTokenRepository } from "../repositories/index.js";
-import { ValidationError, NotAuthenticatedError } from "../errors/index.js";
-import { AUTH_CONFIG, REFRESH_AUTH_CONFIG } from "../config/env.js";
-import { ERROR_CODES } from "../constants/index.js";
-import { userOutputDTO, type LoginServiceOutput, type AuthTokens } from "../dtos/index.js";
-import type { LoginInput, CreateUserInput } from "../validation/index.js";
+import { userRepository, refreshTokenRepository } from "@/repositories/index.js";
+import { ValidationError, NotAuthenticatedError } from "@/errors/index.js";
+import { AUTH_CONFIG, REFRESH_AUTH_CONFIG } from "@/config/env.js";
+import { ERROR_CODES } from "@/constants/index.js";
+import { userOutputDTO, type LoginServiceOutput, type AuthTokens } from "@/dtos/index.js";
+import type { LoginInput, CreateUserInput } from "@/validation/index.js";
 import { userService } from "./userService.js";
 
 /**

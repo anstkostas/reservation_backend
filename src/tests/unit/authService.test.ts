@@ -1,11 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import bcrypt from "bcryptjs";
-import { authService } from "../../services/authService.js";
-import { userRepository } from "../../repositories/index.js";
-import { userService } from "../../services/userService.js";
-import { ValidationError } from "../../errors/index.js";
+import { authService } from "@/services/authService.js";
+import { userRepository } from "@/repositories/index.js";
+import { userService } from "@/services/userService.js";
+import { ValidationError } from "@/errors/index.js";
 import { Role, type User } from "../../generated/prisma/index.js";
-import type { UserOutput } from "../../dtos/index.js";
+import type { UserOutput } from "@/dtos/index.js";
 
 // vi.mock is hoisted by Vitest's transform to run before any module initialises,
 // even though it appears here after the imports. authService will receive these

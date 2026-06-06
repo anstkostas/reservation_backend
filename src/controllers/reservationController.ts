@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import { reservationService } from "../services/index.js";
-import { sendResponse } from "../utils/index.js";
-import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
-import { getAuthUser } from "../middlewares/index.js";
+import { reservationService } from "@/services/index.js";
+import { sendResponse } from "@/utils/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES } from "@/constants/index.js";
+import { getAuthUser } from "@/middlewares/index.js";
 import type {
   CreateReservationInput,
   UpdateReservationInput,
   ReservationStatusInput,
-} from "../validation/index.js";
+} from "@/validation/index.js";
 
 export const reservationController = {
   /**

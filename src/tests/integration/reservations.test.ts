@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import request from "supertest";
-import app from "../../app.js";
-import { testPrisma } from "../helpers/testPrismaClient.js";
-import { testSeeds } from "../helpers/seeds.js";
-import { COOKIE_CONFIG } from "../../config/env.js";
-import { HTTP_STATUS } from "../../constants/index.js";
-import { makeJwt } from "../helpers/testUtils.js";
+import app from "@/app.js";
+import { testPrisma } from "@/tests/helpers/testPrismaClient.js";
+import { testSeeds } from "@/tests/helpers/seeds.js";
+import { COOKIE_CONFIG } from "@/config/env.js";
+import { HTTP_STATUS } from "@/constants/index.js";
+import { makeJwt } from "@/tests/helpers/testUtils.js";
 
 let customerId: string;
 let customer2Id: string;

@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { prisma } from "../config/prismaClient.js";
+import { prisma } from "@/config/prismaClient.js";
 import { type Role } from "../generated/prisma/index.js";
-import { NotAuthenticatedError } from "../errors/index.js";
-import { AUTH_CONFIG, COOKIE_CONFIG } from "../config/env.js";
-import { ERROR_CODES } from "../constants/index.js";
-import { userOutputDTO, type UserOutput } from "../dtos/index.js";
+import { NotAuthenticatedError } from "@/errors/index.js";
+import { AUTH_CONFIG, COOKIE_CONFIG } from "@/config/env.js";
+import { ERROR_CODES } from "@/constants/index.js";
+import { userOutputDTO, type UserOutput } from "@/dtos/index.js";
 
 /** Shape of the JWT payload signed by authService */
 interface JwtPayloadWithId extends jwt.JwtPayload {

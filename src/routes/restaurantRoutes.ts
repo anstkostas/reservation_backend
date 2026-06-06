@@ -5,9 +5,9 @@
  *   description: Restaurant management
  */
 import express from "express";
-import { restaurantController } from "../controllers/index.js";
-import { validate } from "../middlewares/index.js";
-import { idParamSchema } from "../validation/index.js";
+import { restaurantController } from "@/controllers/index.js";
+import { validate } from "@/middlewares/index.js";
+import { idParamSchema } from "@/validation/index.js";
 
 const router = express.Router();
 

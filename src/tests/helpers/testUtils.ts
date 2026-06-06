@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import type ms from "ms";
-import { AUTH_CONFIG } from "../../config/env.js";
+import { AUTH_CONFIG } from "@/config/env.js";
 
 /**
  * Creates a signed JWT the same way authService does — lets integration tests call

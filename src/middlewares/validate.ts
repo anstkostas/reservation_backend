@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { type RequestHandler, Request, Response, NextFunction } from "express";
-import { ValidationError } from "../errors/index.js";
-import { ERROR_CODES } from "../constants/index.js";
+import { ValidationError } from "@/errors/index.js";
+import { ERROR_CODES } from "@/constants/index.js";
 
 /**
  * Returns Express middleware that validates and coerces req[property] against a Zod schema.

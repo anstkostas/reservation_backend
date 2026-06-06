@@ -1,16 +1,16 @@
-import { prisma } from "../config/prismaClient.js";
+import { prisma } from "@/config/prismaClient.js";
 import { Prisma, Role } from "../generated/prisma/index.js";
-import { restaurantRepository, reservationRepository } from "../repositories/index.js";
-import { reservationOutputDTO, type ReservationOutput } from "../dtos/index.js";
-import { validateReservationDateTime } from "../utils/index.js";
-import { NotFoundError, ValidationError, ForbiddenError } from "../errors/index.js";
-import { RESERVATION_STATUS, ERROR_CODES } from "../constants/index.js";
+import { restaurantRepository, reservationRepository } from "@/repositories/index.js";
+import { reservationOutputDTO, type ReservationOutput } from "@/dtos/index.js";
+import { validateReservationDateTime } from "@/utils/index.js";
+import { NotFoundError, ValidationError, ForbiddenError } from "@/errors/index.js";
+import { RESERVATION_STATUS, ERROR_CODES } from "@/constants/index.js";
 import type {
   CreateReservationInput,
   UpdateReservationInput,
   ReservationStatusInput,
-} from "../validation/index.js";
-import type { UserOutput } from "../dtos/index.js";
+} from "@/validation/index.js";
+import type { UserOutput } from "@/dtos/index.js";
 
 export const reservationService = {
   /**

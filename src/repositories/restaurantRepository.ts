@@ -1,6 +1,6 @@
-import { prisma } from "../config/prismaClient.js";
+import { prisma } from "@/config/prismaClient.js";
 import { Prisma, type Restaurant } from "../generated/prisma/index.js";
-import { PRISMA_ERROR_CODES, type SupportedLocale } from "../constants/index.js";
+import { PRISMA_ERROR_CODES, type SupportedLocale } from "@/constants/index.js";
 
 /**
  * A restaurant joined with the translation rows matching a requested locale.

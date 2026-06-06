@@ -1,5 +1,5 @@
 import { Prisma } from "../generated/prisma/index.js";
-import { HTTP_STATUS, RESPONSE_MESSAGES, ErrorCode, ERROR_CODES } from "../constants/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES, ErrorCode, ERROR_CODES } from "@/constants/index.js";
 
 /** A single field-level validation failure returned in the error response. */
 export interface ValidationDetail {

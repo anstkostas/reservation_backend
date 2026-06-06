@@ -1,5 +1,5 @@
-import { ValidationError } from "../errors/index.js";
-import { RESERVATION_BOOKING_WINDOW_MONTHS, ERROR_CODES } from "../constants/index.js";
+import { ValidationError } from "@/errors/index.js";
+import { RESERVATION_BOOKING_WINDOW_MONTHS, ERROR_CODES } from "@/constants/index.js";
 
 
 /**

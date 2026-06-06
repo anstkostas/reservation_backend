@@ -1,16 +1,16 @@
 import bcrypt from "bcryptjs";
-import { prisma } from "../config/prismaClient.js";
+import { prisma } from "@/config/prismaClient.js";
 import { Role } from "../generated/prisma/index.js";
-import { userRepository, restaurantRepository } from "../repositories/index.js";
+import { userRepository, restaurantRepository } from "@/repositories/index.js";
 import {
   userOutputDTO,
   restaurantOutputDTO,
   type UserOutput,
   type RestaurantOutput,
-} from "../dtos/index.js";
-import { NotFoundError, ValidationError } from "../errors/index.js";
-import { SALT_ROUNDS, ERROR_CODES } from "../constants/index.js";
-import type { CreateUserInput } from "../validation/index.js";
+} from "@/dtos/index.js";
+import { NotFoundError, ValidationError } from "@/errors/index.js";
+import { SALT_ROUNDS, ERROR_CODES } from "@/constants/index.js";
+import type { CreateUserInput } from "@/validation/index.js";
 
 export const userService = {
   /**

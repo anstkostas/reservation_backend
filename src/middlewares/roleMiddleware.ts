@@ -1,7 +1,7 @@
 import { type RequestHandler, Request, Response, NextFunction } from "express";
 import { Role } from "../generated/prisma/index.js";
-import { ForbiddenError } from "../errors/index.js";
-import { ERROR_CODES } from "../constants/index.js";
+import { ForbiddenError } from "@/errors/index.js";
+import { ERROR_CODES } from "@/constants/index.js";
 
 /**
  * Enforce role-based access. Request proceeds only if req.user.role matches the required role.

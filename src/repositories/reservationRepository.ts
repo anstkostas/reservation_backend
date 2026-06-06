@@ -1,7 +1,7 @@
-import { prisma } from "../config/prismaClient.js";
+import { prisma } from "@/config/prismaClient.js";
 import { Prisma, type Reservation, type ReservationStatus } from "../generated/prisma/index.js";
-import { PRISMA_ERROR_CODES, RESERVATION_BUFFER_HOURS, RESERVATION_STATUS } from "../constants/index.js";
-import type { ReservationWithRelations } from "../dtos/reservationDTO.js";
+import { PRISMA_ERROR_CODES, RESERVATION_BUFFER_HOURS, RESERVATION_STATUS } from "@/constants/index.js";
+import type { ReservationWithRelations } from "@/dtos/reservationDTO.js";
 
 interface ReservationFilter {
   restaurantId?: string;

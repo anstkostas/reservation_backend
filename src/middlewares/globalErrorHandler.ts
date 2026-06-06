@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { Prisma } from "../generated/prisma/index.js";
-import { ENV } from "../config/env.js";
-import { ERROR_CODES, ErrorCode } from "../constants/index.js";
+import { ENV } from "@/config/env.js";
+import { ERROR_CODES, ErrorCode } from "@/constants/index.js";
 import {
   ValidationError,
   ValidationDetail,
   ForbiddenError,
   NotFoundError,
   NotAuthenticatedError,
-} from "../errors/index.js";
+} from "@/errors/index.js";
 
 /**
  * Central Express error handler. Catches all errors bubbled via next(err) and

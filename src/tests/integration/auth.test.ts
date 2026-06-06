@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import type { User } from "../../generated/prisma/index.js";
-import app from "../../app.js";
-import { testPrisma } from "../helpers/testPrismaClient.js";
-import { testSeeds } from "../helpers/seeds.js";
-import { COOKIE_CONFIG } from "../../config/env.js";
-import { HTTP_STATUS } from "../../constants/index.js";
-import { makeJwt, makeExpiredJwt } from "../helpers/testUtils.js";
+import app from "@/app.js";
+import { testPrisma } from "@/tests/helpers/testPrismaClient.js";
+import { testSeeds } from "@/tests/helpers/seeds.js";
+import { COOKIE_CONFIG } from "@/config/env.js";
+import { HTTP_STATUS } from "@/constants/index.js";
+import { makeJwt, makeExpiredJwt } from "@/tests/helpers/testUtils.js";
 
 // Matches testSeeds.createUser default — used in login test request bodies
 const TEST_PASSWORD = "Test@1234";

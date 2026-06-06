@@ -1,7 +1,7 @@
-import { restaurantRepository } from "../repositories/index.js";
-import { restaurantOutputDTO, type RestaurantOutput } from "../dtos/index.js";
-import { NotFoundError } from "../errors/index.js";
-import { ERROR_CODES, type SupportedLocale } from "../constants/index.js";
+import { restaurantRepository } from "@/repositories/index.js";
+import { restaurantOutputDTO, type RestaurantOutput } from "@/dtos/index.js";
+import { NotFoundError } from "@/errors/index.js";
+import { ERROR_CODES, type SupportedLocale } from "@/constants/index.js";
 
 export const restaurantService = {
   /**

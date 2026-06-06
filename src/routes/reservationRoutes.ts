@@ -1,14 +1,14 @@
 import express from "express";
 import { Role } from "../generated/prisma/index.js";
-import { reservationController } from "../controllers/index.js";
-import { requireAuth, requireRole, validate } from "../middlewares/index.js";
+import { reservationController } from "@/controllers/index.js";
+import { requireAuth, requireRole, validate } from "@/middlewares/index.js";
 import {
   createReservationSchema,
   updateReservationSchema,
   reservationStatusSchema,
   idParamSchema,
   restaurantIdParamSchema,
-} from "../validation/index.js";
+} from "@/validation/index.js";
 
 const router = express.Router();
 

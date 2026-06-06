@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { authService } from "../services/index.js";
-import { sendResponse } from "../utils/index.js";
-import { getAuthUser } from "../middlewares/index.js";
-import { COOKIE_CONFIG, REFRESH_COOKIE_CONFIG } from "../config/env.js";
-import { HTTP_STATUS, RESPONSE_MESSAGES, ERROR_CODES } from "../constants/index.js";
-import { NotAuthenticatedError } from "../errors/index.js";
-import type { LoginInput, CreateUserInput } from "../validation/index.js";
+import { authService } from "@/services/index.js";
+import { sendResponse } from "@/utils/index.js";
+import { getAuthUser } from "@/middlewares/index.js";
+import { COOKIE_CONFIG, REFRESH_COOKIE_CONFIG } from "@/config/env.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES, ERROR_CODES } from "@/constants/index.js";
+import { NotAuthenticatedError } from "@/errors/index.js";
+import type { LoginInput, CreateUserInput } from "@/validation/index.js";
 
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
   res.cookie(COOKIE_CONFIG.NAME, accessToken, {

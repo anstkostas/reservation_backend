@@ -1,4 +1,9 @@
 import { defineConfig } from 'vitest/config';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
   test: {
@@ -13,6 +18,9 @@ export default defineConfig({
     testTimeout: 15000,
   },
   resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
     // Allow Vitest to resolve .ts files when source imports use .js extensions
     // (required by NodeNext module resolution)
     extensionOrder: ['.ts', '.js'],

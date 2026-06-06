@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { userService } from "../services/index.js";
-import { sendResponse } from "../utils/index.js";
-import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import { userService } from "@/services/index.js";
+import { sendResponse } from "@/utils/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES } from "@/constants/index.js";
 
 export const userController = {
   // No create user here — account creation is handled by authController.

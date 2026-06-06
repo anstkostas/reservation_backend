@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { prisma } from "../config/prismaClient.js";
-import { SALT_ROUNDS } from "../constants/index.js";
+import { prisma } from "@/config/prismaClient.js";
+import { SALT_ROUNDS } from "@/constants/index.js";
 
 export const refreshTokenRepository = {
   /**

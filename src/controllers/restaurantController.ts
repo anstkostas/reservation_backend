@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { restaurantService } from "../services/index.js";
-import { sendResponse, resolveLocale } from "../utils/index.js";
-import { HTTP_STATUS, RESPONSE_MESSAGES } from "../constants/index.js";
+import { restaurantService } from "@/services/index.js";
+import { sendResponse, resolveLocale } from "@/utils/index.js";
+import { HTTP_STATUS, RESPONSE_MESSAGES } from "@/constants/index.js";
 
 export const restaurantController = {
   /**

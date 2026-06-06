@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type SupportedLocale } from "../constants/index.js";
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type SupportedLocale } from "@/constants/index.js";
 
 /**
  * Resolves the best supported locale from an `Accept-Language` header value.

@@ -2,11 +2,11 @@ import express, { type Request, type Response, type NextFunction } from "express
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./docs/swagger.js";
-import { REACT_CLIENT_URL, FLUTTER_CLIENT_URL } from "./config/env.js";
-import { registerRoutes } from "./routes/index.js";
-import { globalErrorHandler } from "./middlewares/index.js";
-import { NotFoundError } from "./errors/index.js";
+import swaggerSpec from "@/docs/swagger.js";
+import { REACT_CLIENT_URL, FLUTTER_CLIENT_URL } from "@/config/env.js";
+import { registerRoutes } from "@/routes/index.js";
+import { globalErrorHandler } from "@/middlewares/index.js";
+import { NotFoundError } from "@/errors/index.js";
 
 const app = express();
 

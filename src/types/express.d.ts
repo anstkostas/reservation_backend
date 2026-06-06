@@ -1,4 +1,4 @@
-import type { UserOutput } from "../dtos/userDTO.js";
+import type { UserOutput } from "@/dtos/userDTO.js";
 
 declare global {
   namespace Express {
