@@ -7,6 +7,7 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   test: {
+    include: ['src/tests/**/*.test.ts'],
     // Use child process forks instead of worker threads.
     // Prisma's pg pool uses Node.js net sockets which are not
     // shareable across worker_threads — forks get their own process.
@@ -21,9 +22,6 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, './src'),
     },
-    // Allow Vitest to resolve .ts files when source imports use .js extensions
-    // (required by NodeNext module resolution)
-    extensionOrder: ['.ts', '.js'],
     conditions: ['import', 'node'],
   },
 });

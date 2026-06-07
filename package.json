@@ -28,6 +28,7 @@
     "test": "NODE_ENV=test vitest run",
     "test:watch": "NODE_ENV=test vitest",
     "test:coverage": "NODE_ENV=test vitest run --coverage",
+    "test:migrate": "tsx prisma/test-migrate.ts",
     "docker:up": "docker compose -f ../docker-compose.yml up -d postgres",
     "docker:up:full": "docker compose -f ../docker-compose.yml up -d",
     "docker:down": "docker compose -f ../docker-compose.yml down",
