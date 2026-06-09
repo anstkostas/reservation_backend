@@ -34,7 +34,7 @@
     "docker:down": "docker compose -f ../docker-compose.yml down",
     "docker:logs": "docker compose -f ../docker-compose.yml logs -f",
     "docker:rebuild": "docker compose -f ../docker-compose.yml build backend && docker compose -f ../docker-compose.yml restart backend",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "prisma migrate dev && (npm run test:migrate || (echo '' && echo '⚠️  Test DB sync skipped — test DB may not be running.' && echo '   Start:    sudo -u postgres /Library/PostgreSQL/18/bin/pg_ctl start -D /Library/PostgreSQL/18/data' && echo '   Then run: npm run test:migrate'))",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset"
   },

@@ -17,6 +17,11 @@ export default defineConfig({
     // conflicting on the same DB connection
     sequence: { concurrent: false },
     testTimeout: 15000,
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['src/tests/**', 'src/generated/**', 'src/**/*.d.ts'],
+    },
   },
   resolve: {
     alias: {
