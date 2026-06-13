@@ -1,5 +1,5 @@
 import { prisma } from "@/config/prismaClient.js";
-import { Prisma, type Restaurant } from "../generated/prisma/index.js";
+import { Prisma, type Restaurant, type RestaurantTranslation } from "../generated/prisma/index.js";
 import { PRISMA_ERROR_CODES, type SupportedLocale } from "@/constants/index.js";
 
 /**
@@ -82,6 +82,77 @@ export const restaurantRepository = {
     const client = tx ?? prisma;
     // ownerId is @unique on Restaurant — findUnique is safe here
     return client.restaurant.findUnique({ where: { ownerId } });
+  },
+
+  /**
+   * Finds the restaurant owned by [ownerId], joined with ALL its translation rows.
+   * Used by the owner read/update flows which need every locale, not just one.
+   *
+   * @param {string} ownerId - Owner's user UUID
+   * @param {Prisma.TransactionClient} [tx]
+   * @returns {Promise<RestaurantWithTranslation | null>}
+   */
+  async findByOwnerIdWithTranslations(
+    ownerId: string,
+    tx?: Prisma.TransactionClient
+  ): Promise<RestaurantWithTranslation | null> {
+    const client = tx ?? prisma;
+    return client.restaurant.findUnique({
+      where: { ownerId },
+      include: { translations: true },
+    });
+  },
+
+  /**
+   * Updates a restaurant's scalar columns. DB-only — the caller builds the data object.
+   * Maps P2025 (record not found) to null, mirroring assignOwner.
+   *
+   * @param {string} id - Restaurant UUID
+   * @param {Prisma.RestaurantUpdateInput} data - Pre-built scalar update payload
+   * @param {Prisma.TransactionClient} [tx]
+   * @returns {Promise<Restaurant | null>}
+   */
+  async update(
+    id: string,
+    data: Prisma.RestaurantUpdateInput,
+    tx?: Prisma.TransactionClient
+  ): Promise<Restaurant | null> {
+    const client = tx ?? prisma;
+    try {
+      return await client.restaurant.update({ where: { id }, data });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND
+      ) {
+        return null;
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Upserts the translation row for one (restaurant, locale) pair. Uses the
+   * @@unique([restaurantId, locale]) compound key (Prisma name: restaurantId_locale).
+   *
+   * @param {string} restaurantId
+   * @param {string} locale - e.g. "el"
+   * @param {string} description
+   * @param {Prisma.TransactionClient} [tx]
+   * @returns {Promise<RestaurantTranslation>}
+   */
+  async upsertTranslation(
+    restaurantId: string,
+    locale: string,
+    description: string,
+    tx?: Prisma.TransactionClient
+  ): Promise<RestaurantTranslation> {
+    const client = tx ?? prisma;
+    return client.restaurantTranslation.upsert({
+      where: { restaurantId_locale: { restaurantId, locale } },
+      create: { restaurantId, locale, description },
+      update: { description },
+    });
   },
 
   /**

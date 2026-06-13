@@ -153,6 +153,90 @@ const swaggerSpec = swaggerJSDoc({
           description:
             "Restaurant object returned by the API. address and phone are intentionally omitted — restaurantOutputDTO excludes them as the frontend does not use either field.",
         },
+        RestaurantPrivate: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              format: "uuid",
+            },
+            name: {
+              type: "string",
+            },
+            description: {
+              type: "object",
+              properties: {
+                en: { type: "string" },
+                el: { type: "string", nullable: true },
+              },
+              description: "Both locales — EN is the canonical text; EL is null when no translation exists.",
+            },
+            address: {
+              type: "string",
+            },
+            phone: {
+              type: "string",
+            },
+            capacity: {
+              type: "integer",
+            },
+            logoUrl: {
+              type: "string",
+            },
+            coverImageUrl: {
+              type: "string",
+            },
+            ownerId: {
+              type: "string",
+              format: "uuid",
+              nullable: true,
+            },
+          },
+          description:
+            "Owner-facing restaurant shape. Exposes address + phone (omitted from the public Restaurant schema) and returns description as { en, el } for pre-filling the edit form.",
+        },
+        UpdateRestaurantInput: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              minLength: 4,
+              maxLength: 100,
+            },
+            description: {
+              type: "object",
+              properties: {
+                en: {
+                  type: "string",
+                  minLength: 1,
+                  maxLength: 500,
+                  description: "Canonical English description. Cannot be blank if present.",
+                },
+                el: {
+                  type: "string",
+                  maxLength: 500,
+                  description: "Greek description. Empty string allowed (clears / sets EL text).",
+                },
+              },
+            },
+            address: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+            },
+            phone: {
+              type: "string",
+              minLength: 1,
+              maxLength: 30,
+            },
+            capacity: {
+              type: "integer",
+              minimum: 1,
+            },
+          },
+          description:
+            "Partial update payload for a restaurant. All fields optional — at least one must be provided. Images and ownerId are excluded from this endpoint.",
+        },
         ErrorResponse: {
           type: "object",
           properties: {

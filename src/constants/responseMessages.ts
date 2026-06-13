@@ -34,6 +34,7 @@ export const RESPONSE_MESSAGES = {
   RESTAURANT: {
     LIST_RETRIEVED: "Restaurants retrieved successfully",
     RETRIEVED: "Restaurant details retrieved successfully",
+    UPDATED: "Restaurant updated successfully",
     NOT_FOUND: "Restaurant not found",
   },
 } as const;
