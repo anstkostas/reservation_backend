@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import type { Prisma } from '../../generated/prisma/index.js';
+import type { Prisma, User, Restaurant, Reservation } from '../../generated/prisma/index.js';
 import { testPrisma } from './testPrismaClient.js';
 import { SALT_ROUNDS } from '../../constants/index.js';
 
@@ -7,7 +7,7 @@ export const testSeeds = {
   async createUser(
     overrides: Partial<Prisma.UserCreateInput> = {},
     tx?: Prisma.TransactionClient
-  ) {
+  ): Promise<User> {
     const client = tx ?? testPrisma;
     const password = await bcrypt.hash('Test@1234', SALT_ROUNDS);
     return client.user.create({
@@ -25,7 +25,7 @@ export const testSeeds = {
   async createRestaurant(
     overrides: Partial<Prisma.RestaurantCreateInput> = {},
     tx?: Prisma.TransactionClient
-  ) {
+  ): Promise<Restaurant> {
     const client = tx ?? testPrisma;
     return client.restaurant.create({
       data: {
@@ -50,7 +50,7 @@ export const testSeeds = {
       status?: 'active' | 'canceled' | 'completed' | 'no_show';
     },
     tx?: Prisma.TransactionClient
-  ) {
+  ): Promise<Reservation> {
     const client = tx ?? testPrisma;
     // Default: 3 hours from now — within booking window, past min lead time
     const scheduledAt = data.scheduledAt ?? new Date(Date.now() + 3 * 60 * 60 * 1000);
