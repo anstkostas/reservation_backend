@@ -4,13 +4,15 @@ import { prisma } from "../src/config/prismaClient.js";
 import { SALT_ROUNDS } from "../src/constants/index.js";
 
 /**
- * Returns a random scheduledAt within ±2 months of now, with a random
+ * Returns a random scheduledAt within ±15 days of now, with a random
  * hour between 15:00 and 23:00, and whether it falls in the past.
+ * Kept within ±15 days so e2e tests can safely book at +30 days
+ * without hitting a seed-data conflict.
  */
 function getRandomScheduledAt(): { scheduledAt: Date; inPast: boolean } {
   const now = new Date();
-  const twoMonths = 60 * 24 * 60 * 60 * 1000;
-  const randomOffset = Math.floor(Math.random() * (2 * twoMonths + 1)) - twoMonths;
+  const halfMonth = 15 * 24 * 60 * 60 * 1000;
+  const randomOffset = Math.floor(Math.random() * (2 * halfMonth + 1)) - halfMonth;
   const scheduledAt = new Date(now.getTime() + randomOffset);
   const hour = 19 + Math.floor(Math.random() * 9) - 4; // 15–23
   scheduledAt.setHours(hour, 0, 0, 0);
