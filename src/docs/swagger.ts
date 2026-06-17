@@ -135,6 +135,12 @@ const swaggerSpec = swaggerJSDoc({
             description: {
               type: "string",
             },
+            address: {
+              type: "string",
+            },
+            phone: {
+              type: "string",
+            },
             capacity: {
               type: "integer",
             },
@@ -151,7 +157,7 @@ const swaggerSpec = swaggerJSDoc({
             },
           },
           description:
-            "Restaurant object returned by the API. address and phone are intentionally omitted — restaurantOutputDTO excludes them as the frontend does not use either field.",
+            "Public restaurant shape returned by GET /restaurants and GET /restaurants/:id. Includes address and phone as public business contact info.",
         },
         RestaurantPrivate: {
           type: "object",

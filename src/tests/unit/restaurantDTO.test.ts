@@ -1,10 +1,11 @@
 /**
- * Unit tests for restaurantPrivateOutputDTO — pure transform, no mocks.
+ * Unit tests for restaurantOutputDTO and restaurantPrivateOutputDTO — pure transforms, no mocks.
  * Type: unit.
- * Covers: EL translation present, no translations, description shape is always an object.
+ * Covers: restaurantOutputDTO exposes address + phone; restaurantPrivateOutputDTO EL translation
+ * present, no translations, description shape is always an object.
  */
 import { describe, it, expect } from "vitest";
-import { restaurantPrivateOutputDTO } from "@/dtos/index.js";
+import { restaurantOutputDTO, restaurantPrivateOutputDTO } from "@/dtos/index.js";
 import type { Restaurant, RestaurantTranslation } from "../../generated/prisma/index.js";
 
 const baseRestaurant: Restaurant = {
@@ -25,6 +26,30 @@ const elTranslation: RestaurantTranslation = {
   locale: "el",
   description: "Ελληνική περιγραφή",
 };
+
+describe("restaurantOutputDTO", () => {
+  it("includes address and phone in the public output", () => {
+    const output = restaurantOutputDTO({ ...baseRestaurant });
+
+    expect(output.address).toBe("123 Main Street");
+    expect(output.phone).toBe("555-1234");
+  });
+
+  it("uses the translation description when a translations row is present", () => {
+    const output = restaurantOutputDTO({
+      ...baseRestaurant,
+      translations: [elTranslation],
+    });
+
+    expect(output.description).toBe("Ελληνική περιγραφή");
+  });
+
+  it("falls back to the canonical description when no translations are provided", () => {
+    const output = restaurantOutputDTO({ ...baseRestaurant });
+
+    expect(output.description).toBe("English description");
+  });
+});
 
 describe("restaurantPrivateOutputDTO", () => {
   it("maps description as { en, el } when an EL translation row exists", () => {

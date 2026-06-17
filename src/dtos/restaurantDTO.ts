@@ -43,6 +43,8 @@ export interface RestaurantOutput {
   id: string;
   name: string;
   description: string;
+  address: string;
+  phone: string;
   capacity: number;
   logoUrl: string;
   coverImageUrl: string;
@@ -51,7 +53,7 @@ export interface RestaurantOutput {
 
 /**
  * Shapes a Restaurant record for API output.
- * Intentionally omits address and phone — the frontend does not use either field.
+ * Exposes address and phone as public business contact info — customers see them on the detail page.
  *
  * `description` is localised: when a joined `translations` row for the requested
  * locale is present, its text wins; otherwise it falls back to the canonical
@@ -68,6 +70,8 @@ export function restaurantOutputDTO(
     id: restaurant.id,
     name: restaurant.name,
     description: restaurant.translations?.[0]?.description ?? restaurant.description,
+    address: restaurant.address,
+    phone: restaurant.phone,
     capacity: restaurant.capacity,
     logoUrl: restaurant.logoUrl,
     coverImageUrl: restaurant.coverImageUrl,

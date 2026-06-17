@@ -74,11 +74,12 @@ const mockRestaurant: Restaurant = {
   ownerId: null,
 };
 
-// restaurantOutputDTO strips address and phone — this is the expected shape
 const expectedRestaurantOutput: RestaurantOutput = {
   id: mockRestaurant.id,
   name: mockRestaurant.name,
   description: mockRestaurant.description,
+  address: mockRestaurant.address,
+  phone: mockRestaurant.phone,
   capacity: mockRestaurant.capacity,
   logoUrl: mockRestaurant.logoUrl,
   coverImageUrl: mockRestaurant.coverImageUrl,
@@ -129,13 +130,13 @@ describe("userService", () => {
       expect(result[1].name).toBe("Second Kitchen");
     });
 
-    it("omits address and phone — fields the frontend does not consume", async () => {
+    it("includes address and phone in the public output", async () => {
       vi.mocked(restaurantRepository.findUnowned).mockResolvedValue([mockRestaurant]);
 
       const result = await userService.listUnownedRestaurants();
 
-      expect(result[0]).not.toHaveProperty("address");
-      expect(result[0]).not.toHaveProperty("phone");
+      expect(result[0]).toHaveProperty("address");
+      expect(result[0]).toHaveProperty("phone");
     });
 
     it("propagates repository errors without swallowing them", async () => {
