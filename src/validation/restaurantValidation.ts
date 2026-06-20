@@ -20,7 +20,7 @@ export const updateRestaurantSchema = z
       })
       .optional(),
     address: z.string().trim().min(1).max(255).optional(),
-    phone: z.string().trim().min(1).max(30).optional(),
+    phone: z.string().trim().regex(/^\d+$/).min(7).max(15).optional(),
     capacity: z.number().int().min(1).optional(),
   })
   .refine((data) => Object.values(data).some((v) => v !== undefined), {
