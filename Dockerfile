@@ -14,6 +14,8 @@ RUN npx prisma generate
 
 RUN npm run build && cp -r src/generated dist/
 
+RUN chmod +x start.sh
+
 EXPOSE 22000
 
-CMD ["node", "dist/server.js"]
+CMD ["./start.sh"]
