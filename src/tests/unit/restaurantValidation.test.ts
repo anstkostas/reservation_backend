@@ -32,7 +32,7 @@ describe("updateRestaurantSchema", () => {
       name: "My Restaurant",
       description: { en: "English description", el: "Ελληνική περιγραφή" },
       address: "123 Main Street",
-      phone: "555-1234",
+      phone: "5551234",
       capacity: 10,
     });
     expect(result.success).toBe(true);
