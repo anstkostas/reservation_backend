@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "@/docs/swagger.js";
-import { REACT_CLIENT_URL, FLUTTER_CLIENT_URL } from "@/config/env.js";
+import { REACT_CLIENT_URL, FLUTTER_CLIENT_URL, ENV } from "@/config/env.js";
 import { registerRoutes } from "@/routes/index.js";
 import { globalErrorHandler } from "@/middlewares/index.js";
 import { NotFoundError } from "@/errors/index.js";
@@ -34,9 +34,13 @@ app.use(
       if (origin === REACT_CLIENT_URL || origin === FLUTTER_CLIENT_URL) {
         return callback(null, true);
       }
-      // Allow any localhost port — covers multiple dev instances without listing each port
-      if (/^http:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
+      // Allow any localhost port outside production — covers multiple dev instances without listing each port
+      if (ENV !== "production" && /^http:\/\/localhost(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      // Reject by omitting CORS headers — the browser blocks the request. Passing an Error here
+      // would reach the global error handler and log a 500 for every blocked origin.
+      callback(null, false);
     },
     credentials: true,
   })
