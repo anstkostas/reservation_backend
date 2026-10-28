@@ -27,7 +27,17 @@ app.set("trust proxy", 1);
 
 app.use(
   cors({
-    origin: [REACT_CLIENT_URL, FLUTTER_CLIENT_URL],
+    origin: (origin, callback) => {
+      // Allow server-to-server requests and tools like Postman
+      if (!origin) return callback(null, true);
+      // Allow configured client origins — exact match matters in non-local environments
+      if (origin === REACT_CLIENT_URL || origin === FLUTTER_CLIENT_URL) {
+        return callback(null, true);
+      }
+      // Allow any localhost port — covers multiple dev instances without listing each port
+      if (/^http:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   })
 );
