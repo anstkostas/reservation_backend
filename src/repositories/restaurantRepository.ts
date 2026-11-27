@@ -11,6 +11,15 @@ export type RestaurantWithTranslation = Prisma.RestaurantGetPayload<{
   include: { translations: true };
 }>;
 
+/**
+ * The restaurant columns an owner may edit. A whitelist (not Prisma's full update input) so
+ * ownership can never change through `update` — the owner is permanent once assigned.
+ */
+export type RestaurantEditableFields = Pick<
+  Prisma.RestaurantUpdateInput,
+  "name" | "description" | "address" | "phone" | "capacity"
+>;
+
 export const restaurantRepository = {
   /**
    * Finds a single restaurant by primary key.
@@ -104,23 +113,30 @@ export const restaurantRepository = {
   },
 
   /**
-   * Updates a restaurant's scalar columns. DB-only — the caller builds the data object.
-   * Maps P2025 (record not found) to null, mirroring assignOwner.
+   * Updates a restaurant's owner-editable columns (name, description, address, phone, capacity).
+   * Ownership is never written here — use `assignOwner`. Maps P2025 (record not found) to null.
    *
    * @param {string} id - Restaurant UUID
-   * @param {Prisma.RestaurantUpdateInput} data - Pre-built scalar update payload
+   * @param {RestaurantEditableFields} data - Fields to change; omitted fields are left as is
    * @param {Prisma.TransactionClient} [tx]
    * @returns {Promise<Restaurant | null>}
    * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
    */
   async update(
     id: string,
-    data: Prisma.RestaurantUpdateInput,
+    data: RestaurantEditableFields,
     tx?: Prisma.TransactionClient
   ): Promise<Restaurant | null> {
     const client = tx ?? prisma;
+    // Copy only the whitelisted fields: TypeScript blocks extra keys on object literals only, so a
+    // wider object (e.g. carrying owner: { connect }) could still reach here at runtime. Prisma
+    // ignores the undefined ones, so omitted fields stay unchanged.
+    const { name, description, address, phone, capacity } = data;
     try {
-      return await client.restaurant.update({ where: { id }, data });
+      return await client.restaurant.update({
+        where: { id },
+        data: { name, description, address, phone, capacity },
+      });
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -157,34 +173,26 @@ export const restaurantRepository = {
   },
 
   /**
-   * Assigns a user as the owner of a restaurant.
+   * Assigns a user as the owner of a restaurant — only if it has no owner yet.
+   * The `ownerId: null` condition is part of the write itself, so two concurrent signups for the
+   * same restaurant cannot both succeed, and an existing owner is never overwritten.
    *
    * @param {string} id - Restaurant UUID
    * @param {string} ownerId - User UUID to assign as owner
    * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
-   * @returns {Promise<Restaurant | null>} The updated restaurant, or null if not found
-   * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
+   * @returns {Promise<boolean>} True if the owner was assigned; false if the restaurant does not exist or already has an owner
+   * @throws {Error} Any DB error (e.g. FK violation for an unknown user) — propagates to globalErrorHandler
    */
   async assignOwner(
     id: string,
     ownerId: string,
     tx?: Prisma.TransactionClient
-  ): Promise<Restaurant | null> {
+  ): Promise<boolean> {
     const client = tx ?? prisma;
-    try {
-      return await client.restaurant.update({
-        where: { id },
-        data: { ownerId },
-      });
-    } catch (err) {
-      // P2025 — restaurant not found
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND
-      ) {
-        return null;
-      }
-      throw err;
-    }
+    const { count } = await client.restaurant.updateMany({
+      where: { id, ownerId: null },
+      data: { ownerId },
+    });
+    return count === 1;
   },
 };

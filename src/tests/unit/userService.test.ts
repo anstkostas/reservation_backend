@@ -6,7 +6,8 @@
  *         createUser — duplicate email ValidationError, customer happy path returns UserOutput
  *         without password, owner without restaurantId ValidationError, owner restaurant not found
  *         NotFoundError, owner restaurant already owned ValidationError, owner happy path calls
- *         assignOwner and returns UserOutput without password.
+ *         assignOwner and returns UserOutput without password, assignOwner returning false (lost
+ *         the race to a concurrent signup) → RESTAURANT_ALREADY_OWNED ValidationError.
  * Possible expansions: listUnownedRestaurants — with translations joined (locale description
  *         fallback path in restaurantOutputDTO).
  */
@@ -257,7 +258,7 @@ describe("userService", () => {
       vi.mocked(userRepository.findByEmail).mockResolvedValue(null);
       vi.mocked(userRepository.create).mockResolvedValue(ownerUser);
       vi.mocked(restaurantRepository.findById).mockResolvedValue(mockRestaurant);
-      vi.mocked(restaurantRepository.assignOwner).mockResolvedValue(mockRestaurant);
+      vi.mocked(restaurantRepository.assignOwner).mockResolvedValue(true);
 
       const result = await userService.createUser({
         email: ownerUser.email,
@@ -277,6 +278,29 @@ describe("userService", () => {
         ownerUser.id,
         prisma
       );
+    });
+
+    // DOMAIN.md: a restaurant's owner is permanent. A concurrent signup can claim the restaurant
+    // between the ownerId pre-check and the write — assignOwner then reports it assigned nothing.
+    it("throws ValidationError (RESTAURANT_ALREADY_OWNED) when another signup claims the restaurant first", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(null);
+      vi.mocked(userRepository.create).mockResolvedValue({ ...mockUser, role: Role.owner });
+      vi.mocked(restaurantRepository.findById).mockResolvedValue(mockRestaurant);
+      vi.mocked(restaurantRepository.assignOwner).mockResolvedValue(false);
+
+      const thrown = await userService
+        .createUser({
+          email: mockUser.email,
+          password: "SomePass1!",
+          firstname: mockUser.firstname,
+          lastname: mockUser.lastname,
+          role: "owner",
+          restaurantId: mockRestaurant.id,
+        })
+        .catch((e: unknown) => e);
+
+      expect(thrown).toBeInstanceOf(ValidationError);
+      expect((thrown as ValidationError).code).toBe(ERROR_CODES.RESTAURANT_ALREADY_OWNED);
     });
   });
 });

@@ -1,6 +1,6 @@
 import { prisma } from "@/config/prismaClient.js";
-import { Prisma, Role } from "../generated/prisma/index.js";
-import { restaurantRepository } from "@/repositories/index.js";
+import { Role } from "../generated/prisma/index.js";
+import { restaurantRepository, type RestaurantEditableFields } from "@/repositories/index.js";
 import {
   restaurantOutputDTO,
   restaurantPrivateOutputDTO,
@@ -100,7 +100,7 @@ export const restaurantService = {
       }
 
       // Build the scalar update from only the provided fields. description.en is the canonical column.
-      const scalarData: Prisma.RestaurantUpdateInput = {};
+      const scalarData: RestaurantEditableFields = {};
       if (data.name !== undefined) scalarData.name = data.name;
       if (data.address !== undefined) scalarData.address = data.address;
       if (data.phone !== undefined) scalarData.phone = data.phone;

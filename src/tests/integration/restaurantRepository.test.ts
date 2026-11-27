@@ -6,9 +6,11 @@
  *   lives on the canonical column, no translation → [], unknown id → null); findUnowned (only
  *   ownerId null); findByOwnerId (found, null, tx); findByOwnerIdWithTranslations (ALL rows
  *   unfiltered, null, tx); update (persists scalars + leaves others unchanged, null on unknown
- *   id, rethrows an out-of-range capacity error, tx rollback); upsertTranslation (creates when absent,
- *   updates in place when present — still one row, tx rollback); assignOwner (sets owner, null
- *   on unknown id, rethrows FK violation for a missing user, tx rollback).
+ *   id, rethrows an out-of-range capacity error, tx rollback, ignores an owner relation write carried
+ *   in a wider object); upsertTranslation (creates when absent, updates in place when present — still
+ *   one row, tx rollback); assignOwner (sets owner on an unowned restaurant → true, never overwrites
+ *   an existing owner → false, false on unknown id, rethrows FK violation for a missing user, tx
+ *   rollback).
  * Not yet covered: none.
  * Possible expansions: findAllLocalized/findByIdLocalized with a translation row whose
  *   description is null (per-column fallback lives in the DTO, not here); upsertTranslation
@@ -279,6 +281,25 @@ describe("restaurantRepository integration tests", () => {
       const stored = await testPrisma.restaurant.findUniqueOrThrow({ where: { id: restaurant.id } });
       expect(stored.name).toBe(restaurant.name);
     });
+
+    // DOMAIN.md: a restaurant's owner is permanent once assigned. A wide Prisma input still compiles
+    // against the narrow parameter type (all-optional types accept extra keys from variables), so the
+    // repository must drop the relation write at runtime.
+    it("ignores an ownership change carried in a wider object and still applies the editable fields", async () => {
+      const originalOwner = await seedOwner();
+      const otherUser = await seedOwner();
+      const restaurant = await seedRestaurant(originalOwner.id);
+      const widerInput: Prisma.RestaurantUpdateInput = {
+        name: "Renamed Place",
+        owner: { connect: { id: otherUser.id } },
+      };
+
+      await restaurantRepository.update(restaurant.id, widerInput);
+
+      const stored = await testPrisma.restaurant.findUniqueOrThrow({ where: { id: restaurant.id } });
+      expect(stored.ownerId).toBe(originalOwner.id);
+      expect(stored.name).toBe("Renamed Place");
+    });
   });
 
   describe("upsertTranslation", () => {
@@ -315,25 +336,36 @@ describe("restaurantRepository integration tests", () => {
   });
 
   describe("assignOwner", () => {
-    it("sets the owner and returns the updated restaurant", async () => {
+    it("sets the owner of an unowned restaurant and returns true", async () => {
       const owner = await seedOwner();
       const restaurant = await seedRestaurant();
 
-      const updated = await restaurantRepository.assignOwner(restaurant.id, owner.id);
+      expect(await restaurantRepository.assignOwner(restaurant.id, owner.id)).toBe(true);
 
-      expect(updated?.ownerId).toBe(owner.id);
       const stored = await testPrisma.restaurant.findUniqueOrThrow({ where: { id: restaurant.id } });
       expect(stored.ownerId).toBe(owner.id);
     });
 
-    it("returns null for an unknown restaurant id", async () => {
-      const owner = await seedOwner();
+    // DOMAIN.md: a restaurant's owner is permanent once assigned.
+    it("does not overwrite an existing owner and returns false", async () => {
+      const originalOwner = await seedOwner();
+      const otherUser = await seedOwner();
+      const restaurant = await seedRestaurant(originalOwner.id);
 
-      expect(await restaurantRepository.assignOwner(randomUUID(), owner.id)).toBeNull();
+      expect(await restaurantRepository.assignOwner(restaurant.id, otherUser.id)).toBe(false);
+
+      const stored = await testPrisma.restaurant.findUniqueOrThrow({ where: { id: restaurant.id } });
+      expect(stored.ownerId).toBe(originalOwner.id);
     });
 
-    // JSDoc @throws: only P2025 maps to null; a FK violation propagates.
-    it("rethrows a non-not-found error (owner user does not exist)", async () => {
+    it("returns false for an unknown restaurant id", async () => {
+      const owner = await seedOwner();
+
+      expect(await restaurantRepository.assignOwner(randomUUID(), owner.id)).toBe(false);
+    });
+
+    // JSDoc @throws: DB errors propagate — a FK violation for a missing user is not mapped to false.
+    it("rethrows a DB error (owner user does not exist)", async () => {
       const restaurant = await seedRestaurant();
 
       await expect(restaurantRepository.assignOwner(restaurant.id, randomUUID())).rejects.toThrow();
@@ -346,11 +378,11 @@ describe("restaurantRepository integration tests", () => {
       const owner = await seedOwner();
       const restaurant = await seedRestaurant();
 
-      const updatedInTx = await inRolledBackTx((tx) =>
+      const assignedInTx = await inRolledBackTx((tx) =>
         restaurantRepository.assignOwner(restaurant.id, owner.id, tx)
       );
 
-      expect(updatedInTx?.ownerId).toBe(owner.id);
+      expect(assignedInTx).toBe(true);
       const stored = await testPrisma.restaurant.findUniqueOrThrow({ where: { id: restaurant.id } });
       expect(stored.ownerId).toBeNull();
     });

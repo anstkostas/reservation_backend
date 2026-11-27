@@ -67,7 +67,13 @@ export const userService = {
           throw new ValidationError("Restaurant already has an owner", [], ERROR_CODES.RESTAURANT_ALREADY_OWNED);
         }
 
-        await restaurantRepository.assignOwner(restaurantId, newUser.id, tx);
+        // The check above is not enough on its own: a concurrent signup can claim the restaurant
+        // between that read and this write. assignOwner only writes while ownerId is null, so a
+        // false result means we lost that race — throwing rolls back the user created above.
+        const assigned = await restaurantRepository.assignOwner(restaurantId, newUser.id, tx);
+        if (!assigned) {
+          throw new ValidationError("Restaurant already has an owner", [], ERROR_CODES.RESTAURANT_ALREADY_OWNED);
+        }
       }
 
       return newUser;
