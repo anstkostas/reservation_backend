@@ -57,6 +57,7 @@ export const userRepository = {
    * @param {string} id - User UUID
    * @param {Prisma.UserUpdateInput} data - Fields to update
    * @returns {Promise<User | null>} The updated user, or null if not found
+   * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
    */
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User | null> {
     try {
@@ -78,6 +79,7 @@ export const userRepository = {
    *
    * @param {string} id - User UUID
    * @returns {Promise<User | null>} The deleted user, or null if not found
+   * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
    */
   async delete(id: string): Promise<User | null> {
     try {

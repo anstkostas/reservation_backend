@@ -111,6 +111,7 @@ export const restaurantRepository = {
    * @param {Prisma.RestaurantUpdateInput} data - Pre-built scalar update payload
    * @param {Prisma.TransactionClient} [tx]
    * @returns {Promise<Restaurant | null>}
+   * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
    */
   async update(
     id: string,
@@ -162,6 +163,7 @@ export const restaurantRepository = {
    * @param {string} ownerId - User UUID to assign as owner
    * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Restaurant | null>} The updated restaurant, or null if not found
+   * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
    */
   async assignOwner(
     id: string,

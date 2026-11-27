@@ -72,6 +72,7 @@ export const reservationRepository = {
    * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client — must be forwarded
    *   when called within a transaction to ensure the write is part of the same atomic operation
    * @returns {Promise<Reservation | null>} The updated reservation, or null if not found
+   * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
    */
   async update(
     id: string,
@@ -99,6 +100,7 @@ export const reservationRepository = {
    * @param {string} id - Reservation UUID
    * @param {Prisma.TransactionClient} [tx] - Optional Prisma transaction client
    * @returns {Promise<Reservation | null>} The deleted reservation, or null if not found
+   * @throws {Error} Any DB error other than record-not-found (P2025) — propagates to globalErrorHandler
    */
   async delete(id: string, tx?: Prisma.TransactionClient): Promise<Reservation | null> {
     const client = tx ?? prisma;
