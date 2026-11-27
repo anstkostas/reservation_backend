@@ -13,8 +13,10 @@ export default defineConfig({
     // shareable across worker_threads — forks get their own process.
     pool: 'forks',
     env: { NODE_ENV: 'test' },
-    // Run test files sequentially to avoid concurrent transactions
-    // conflicting on the same DB connection
+    // Run test files one at a time — integration files share the test DB, and parallel
+    // files race on table-wide reads/writes (counts, pruneExpired, findAll).
+    fileParallelism: false,
+    // Run tests inside a file one after another (this does NOT affect file parallelism).
     sequence: { concurrent: false },
     testTimeout: 15000,
     coverage: {
