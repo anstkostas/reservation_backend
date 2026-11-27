@@ -119,13 +119,14 @@ export const reservationRepository = {
   /**
    * Counts reservations matching the given filter.
    *
-   * @param {ReservationFilter} [filter={}] - Optional filter: restaurantId, customerId
+   * @param {ReservationFilter} [filter={}] - Optional filter: restaurantId, customerId, status
    * @returns {Promise<number>} Total count of matching reservations
    */
   async count(filter: ReservationFilter = {}): Promise<number> {
     const where: Prisma.ReservationWhereInput = {};
     if (filter.restaurantId) where.restaurantId = filter.restaurantId;
     if (filter.customerId) where.customerId = filter.customerId;
+    if (filter.status) where.status = { equals: filter.status };
     return prisma.reservation.count({ where });
   },
 
